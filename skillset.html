@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en-HK">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Skillset | YU Kwan Yin Timothy</title>
+    <meta name="description" content="Interactive skillset map for YU Kwan Yin Timothy across virtual production, motion capture, post-production, live events, software and infrastructure.">
+    <link rel="stylesheet" href="assets/css/site.css">
+    <link rel="alternate" hreflang="zh-HK" href="zh-hk/skillset.html">
+    <link rel="alternate" hreflang="en-HK" href="skillset.html">
+    <script src="assets/js/site.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="index.html" aria-label="NoodleDoStuff home"><span class="brand-mark" aria-hidden="true"></span><span>NoodleDoStuff</span></a>
+        <nav class="nav" aria-label="Primary navigation">
+          <a href="index.html">Home</a>
+          <a href="work.html">Work</a>
+          <a href="skillset.html" aria-current="page">Skillset</a>
+          <a href="about.html">About</a>
+          <a href="contact.html">Contact</a>
+          <a href="links/">Links</a>
+          <a class="lang-link" href="zh-hk/skillset.html" lang="zh-HK">繁中</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="hero hero--compact">
+        <div class="hero-inner">
+          <p class="eyebrow">Skillset</p>
+          <h1>Tools, systems and production knowledge.</h1>
+          <p class="hero-copy">A practical map of the software, hardware workflows and technical domains I use across virtual production, screen work, live events and production engineering.</p>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="skillset-title" data-skillset data-all-label="skills">
+        <div class="section-inner">
+          <div class="section-heading">
+            <h2 id="skillset-title">Interactive skill map.</h2>
+            <p>The categories follow the CV: media production, virtual production, real-time compositing, full virtual workflows, event production, infrastructure, programming and AI tools.</p>
+          </div>
+
+          <div class="skill-controls">
+            <div class="skill-search">
+              <label for="skill-search">Search skillset</label>
+              <input id="skill-search" type="search" data-skill-search autocomplete="off" placeholder="Unreal, NDI, Go, lighting">
+            </div>
+            <div>
+              <ul class="skill-filter-list" aria-label="Skill filters">
+                <li><button class="skill-filter" type="button" data-skill-filter="all" aria-pressed="true">All</button></li>
+                <li><button class="skill-filter" type="button" data-skill-filter="vp" aria-pressed="false">Virtual production</button></li>
+                <li><button class="skill-filter" type="button" data-skill-filter="capture" aria-pressed="false">Capture</button></li>
+                <li><button class="skill-filter" type="button" data-skill-filter="media" aria-pressed="false">Media &amp; post</button></li>
+                <li><button class="skill-filter" type="button" data-skill-filter="events" aria-pressed="false">Events</button></li>
+                <li><button class="skill-filter" type="button" data-skill-filter="software" aria-pressed="false">Software</button></li>
+                <li><button class="skill-filter" type="button" data-skill-filter="ai" aria-pressed="false">AI</button></li>
+              </ul>
+              <p class="skill-result-count" data-skill-count aria-live="polite"></p>
+            </div>
+          </div>
+
+          <div class="skill-layout">
+            <div>
+              <div class="skill-grid" aria-label="Skill cards">
+                <button class="skill-card" type="button" data-skill-card data-skill-name="Unreal Engine" data-groups="vp capture media events" data-search="rendering ndisplay realtime virtual production" data-detail="Real-time rendering, virtual production scenes, nDisplay workflows, virtual camera work and rendered screen content."><span class="skill-name">Unreal Engine</span><span class="skill-kind">Real-time production core</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="nDisplay" data-groups="vp" data-detail="Multi-display Unreal Engine setup for LED stages and synchronized virtual production playback."><span class="skill-name">nDisplay</span><span class="skill-kind">LED volume display</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="LED Walls" data-groups="vp events" data-search="LED volume panels hardware software" data-detail="Hardware and software operation for LED walls, LED volumes and live display environments."><span class="skill-name">LED Walls</span><span class="skill-kind">Display hardware</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="Camera Tracking" data-groups="vp capture" data-detail="Camera-tracking integration for ICVFX, virtual cameras and real-time compositing workflows."><span class="skill-name">Camera Tracking</span><span class="skill-kind">Spatial sync</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="Lens Calibration" data-groups="vp capture" data-detail="Lens and camera calibration work for matching real camera behavior with virtual scenes."><span class="skill-name">Lens Calibration</span><span class="skill-kind">Camera pipeline</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="OCIO" data-groups="vp media" data-search="color display pipeline" data-detail="OpenColorIO and color display pipeline work for consistent camera, LED and post-production output."><span class="skill-name">OCIO</span><span class="skill-kind">Color pipeline</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="Timecode & Genlock" data-groups="vp events" data-search="sync synchronization" data-detail="Synchronization workflow for cameras, render nodes, LED playback and live production systems."><span class="skill-name">Timecode &amp; Genlock</span><span class="skill-kind">System sync</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="LiveLink" data-groups="vp capture" data-detail="Unreal Engine data link for tracking, animation, face capture and real-time production inputs."><span class="skill-name">LiveLink</span><span class="skill-kind">Realtime data link</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="NDI" data-groups="vp capture events" data-search="media pipeline streaming video over network" data-detail="Network video routing for virtual events, streaming pipelines and control-room workflows."><span class="skill-name">NDI</span><span class="skill-kind">Network video</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="Blackmagic Ultimatte" data-groups="vp media" data-search="real-time compositing keying" data-detail="Realtime keying and compositing hardware for virtual production and live camera workflows."><span class="skill-name">Blackmagic Ultimatte</span><span class="skill-kind">Realtime compositing</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="Blackmagic DeckLink" data-groups="vp media events" data-search="capture card video io" data-detail="Video input/output integration for capture, playback, monitoring and realtime compositing."><span class="skill-name">Blackmagic DeckLink</span><span class="skill-kind">Video I/O</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="Spout" data-groups="vp events" data-detail="Realtime texture sharing for local media, visual and interactive workflows."><span class="skill-name">Spout</span><span class="skill-kind">Realtime media bridge</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="Rokoko" data-groups="capture" data-detail="Motion capture system used in virtual artist and full virtual production workflows."><span class="skill-name">Rokoko</span><span class="skill-kind">Motion capture</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="CHINGMU" data-groups="capture" data-detail="Optical motion capture system used for performance capture and virtual production work."><span class="skill-name">CHINGMU</span><span class="skill-kind">Motion capture</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="AI Visual Mocap" data-groups="capture ai" data-detail="AI-assisted motion capture workflows for virtual performance and content production."><span class="skill-name">AI Visual Mocap</span><span class="skill-kind">Capture / AI</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="Virtual Camera" data-groups="vp capture media" data-detail="Virtual camera operation and control for Unreal Engine, Simu-Cam and full virtual production."><span class="skill-name">Virtual Camera</span><span class="skill-kind">Camera system</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="LiveLink Face" data-groups="capture" data-detail="Face capture input for MetaHuman and realtime character performance workflows."><span class="skill-name">LiveLink Face</span><span class="skill-kind">Face capture</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="MetaHuman" data-groups="capture media" data-detail="Character pipeline work for virtual artists, full virtual scenes and Unreal Engine output."><span class="skill-name">MetaHuman</span><span class="skill-kind">Character pipeline</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="DaVinci Resolve" data-groups="media" data-detail="Editing, finishing and color-oriented post-production workflow."><span class="skill-name">DaVinci Resolve</span><span class="skill-kind">Editing / finishing</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="Adobe Premiere Pro" data-groups="media" data-detail="Editing workflow for screen content, courses, events and commercial production."><span class="skill-name">Adobe Premiere Pro</span><span class="skill-kind">Editing</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="Adobe After Effects" data-groups="media" data-detail="Visual effects, motion graphics and television post-production work."><span class="skill-name">Adobe After Effects</span><span class="skill-kind">VFX / motion graphics</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="Photoshop" data-groups="media" data-detail="Image preparation, compositing support and design asset work."><span class="skill-name">Photoshop</span><span class="skill-kind">Image work</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="Illustrator" data-groups="media" data-detail="Vector artwork, production graphics and layout support."><span class="skill-name">Illustrator</span><span class="skill-kind">Vector graphics</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="Fusion" data-groups="media" data-detail="Node-based compositing and VFX workflows inside the Blackmagic toolchain."><span class="skill-name">Fusion</span><span class="skill-kind">Compositing</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="Blender" data-groups="media" data-detail="3D animation, rendering support and visual effects production."><span class="skill-name">Blender</span><span class="skill-kind">3D / VFX</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="Lightroom" data-groups="media" data-detail="Photography editing and image finishing workflow."><span class="skill-name">Lightroom</span><span class="skill-kind">Photography</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="Camera Operation & Lighting" data-groups="media" data-search="cinematography gaffer dop" data-detail="Hands-on camera, lighting, gaffer and cinematography work for screen production."><span class="skill-name">Camera Operation &amp; Lighting</span><span class="skill-kind">Production craft</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="Resolume Arena" data-groups="events" data-detail="Live visual playback and mixing workflow for events and stage environments."><span class="skill-name">Resolume Arena</span><span class="skill-kind">Live visuals</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="vMix" data-groups="events" data-detail="Live video production, switching and streaming workflows."><span class="skill-name">vMix</span><span class="skill-kind">Live production</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="HiRender" data-groups="events" data-detail="Event playback and visual production system experience."><span class="skill-name">HiRender</span><span class="skill-kind">Event playback</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="Projection Mapping" data-groups="events" data-detail="Projection planning and playback workflows for live events and installations."><span class="skill-name">Projection Mapping</span><span class="skill-kind">Live visuals</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="Dante" data-groups="events" data-search="audio network" data-detail="Network audio workflow for live event and production environments."><span class="skill-name">Dante</span><span class="skill-kind">Audio network</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="Sonobus" data-groups="events" data-detail="Networked audio tool experience for remote and production audio workflows."><span class="skill-name">Sonobus</span><span class="skill-kind">Network audio</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="Avolites" data-groups="events" data-search="lighting console dmx" data-detail="Lighting-console experience for stage and event production."><span class="skill-name">Avolites</span><span class="skill-kind">Lighting console</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="DMX" data-groups="vp events" data-detail="Lighting and control protocol used across event and production systems."><span class="skill-name">DMX</span><span class="skill-kind">Lighting control</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="TouchDesigner" data-groups="events" data-detail="Interactive media and realtime visual system development."><span class="skill-name">TouchDesigner</span><span class="skill-kind">Interactive media</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="Unity" data-groups="events software" data-detail="Interactive and AR/MR development experience."><span class="skill-name">Unity</span><span class="skill-kind">Interactive engine</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="SteamVR / Vive" data-groups="events capture" data-search="vr ar mr tracking" data-detail="VR hardware and tracking ecosystem experience for interactive and AR/MR work."><span class="skill-name">SteamVR / Vive</span><span class="skill-kind">VR / tracking</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="Go" data-groups="software" data-detail="Primary programming language for production tools and systems work."><span class="skill-name">Go</span><span class="skill-kind">Programming</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="C++" data-groups="software" data-detail="Systems and performance-oriented programming experience."><span class="skill-name">C++</span><span class="skill-kind">Programming</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="JavaScript" data-groups="software" data-detail="Web and tool development work, including this static site."><span class="skill-name">JavaScript</span><span class="skill-kind">Programming</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="Python" data-groups="software ai" data-detail="Automation, scripting and AI-adjacent workflow support."><span class="skill-name">Python</span><span class="skill-kind">Programming</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="C#" data-groups="software events" data-detail="Programming experience connected to Unity and interactive workflows."><span class="skill-name">C#</span><span class="skill-kind">Programming</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="Linux CLI" data-groups="software" data-detail="Server, workstation and production-system administration."><span class="skill-name">Linux CLI</span><span class="skill-kind">System administration</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="Networking" data-groups="software vp events" data-detail="Production networking for media routing, render nodes, control systems and infrastructure."><span class="skill-name">Networking</span><span class="skill-kind">Infrastructure</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="Docker" data-groups="software" data-detail="Containerized infrastructure and software deployment workflow."><span class="skill-name">Docker</span><span class="skill-kind">Infrastructure</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="Proxmox" data-groups="software" data-detail="Virtualization and infrastructure management experience."><span class="skill-name">Proxmox</span><span class="skill-kind">Virtualization</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="TrueNAS" data-groups="software" data-detail="Storage and network infrastructure experience for production environments."><span class="skill-name">TrueNAS</span><span class="skill-kind">Storage infrastructure</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="Git / Perforce" data-groups="software" data-detail="Version-control workflows for software and production teams."><span class="skill-name">Git / Perforce</span><span class="skill-kind">Version control</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="ComfyUI" data-groups="ai" data-detail="Node-based generative AI workflow experience."><span class="skill-name">ComfyUI</span><span class="skill-kind">Generative AI</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="Stable Diffusion / Flux" data-groups="ai media" data-detail="Image-generation workflows for visual exploration and production support."><span class="skill-name">Stable Diffusion / Flux</span><span class="skill-kind">Generative AI</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="Kling" data-groups="ai media" data-detail="AI video-generation workflow experience."><span class="skill-name">Kling</span><span class="skill-kind">Generative AI video</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="LLMs" data-groups="ai software" data-detail="Language-model workflow use for automation, tooling and agentic development."><span class="skill-name">LLMs</span><span class="skill-kind">AI systems</span></button>
+                <button class="skill-card" type="button" data-skill-card data-skill-name="Agentic Development" data-groups="ai software" data-detail="Using AI agents and automation to build, test and reason through technical workflows."><span class="skill-name">Agentic Development</span><span class="skill-kind">Software workflow</span></button>
+              </div>
+              <p class="skill-empty" data-skill-empty>No matching skills.</p>
+            </div>
+            <aside class="skill-inspector" aria-live="polite" aria-labelledby="skill-detail-title">
+              <p class="eyebrow">Selected</p>
+              <h2 id="skill-detail-title" data-skill-title>Unreal Engine</h2>
+              <p data-skill-copy>Real-time rendering, virtual production scenes, nDisplay workflows, virtual camera work and rendered screen content.</p>
+            </aside>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <p>&copy; 2026 YU Kwan Yin Timothy. NoodleDoStuff.</p>
+        <div class="footer-links" aria-label="Footer links">
+          <a href="links/">Links</a>
+          <a href="assets/docs/portfolio-yu-kwan-yin-noodledostuff-2025.pdf">Portfolio PDF</a>
+          <a href="assets/docs/cv-yu-kwan-yin.pdf">CV PDF</a>
+          <a href="mailto:hello@noodledostuff.com">hello@noodledostuff.com</a>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

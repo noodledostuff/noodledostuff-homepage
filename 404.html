@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en-HK">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Page not found | NoodleDoStuff</title>
+    <meta name="robots" content="noindex">
+    <link rel="stylesheet" href="assets/css/site.css">
+    <script>
+      (() => {
+        const path = window.location.pathname;
+        const cleanPath = path.replace(/\/+$/, "");
+        const needsSlash = cleanPath.endsWith("/zh-hk") || cleanPath.endsWith("/links") || cleanPath.endsWith("/zh-hk/links");
+        if (!path.endsWith("/") && needsSlash) {
+          window.location.replace(cleanPath + "/" + window.location.search + window.location.hash);
+        }
+      })();
+    </script>
+    <script src="assets/js/site.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <main id="main">
+      <section class="hero hero--compact">
+        <div class="hero-inner">
+          <p class="eyebrow">404</p>
+          <h1>Page not found.</h1>
+          <p class="hero-copy">The page may have moved. Use the main site links below.</p>
+          <div class="hero-actions">
+            <a class="button" href="index.html">Home</a>
+            <a class="button button--secondary" href="work.html">Work</a>
+            <a class="button button--secondary" href="skillset.html">Skillset</a>
+          </div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
