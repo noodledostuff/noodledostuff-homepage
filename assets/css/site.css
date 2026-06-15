@@ -1394,6 +1394,53 @@ h3 {
   padding: 0 20px;
 }
 
+.links-topbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+}
+
+.links-language-switch {
+  display: inline-grid;
+  grid-template-columns: repeat(2, minmax(58px, 1fr));
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  background: rgba(17, 23, 34, 0.78);
+  box-shadow: 0 16px 42px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(14px);
+}
+
+.links-language-switch button {
+  min-height: 44px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.74);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.94rem;
+  font-weight: 800;
+  transition: background-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
+}
+
+.links-language-switch button:hover {
+  color: #fff;
+}
+
+.links-language-switch button:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.links-language-switch button[aria-pressed="true"] {
+  background: #fff;
+  color: #07101f;
+  box-shadow: 0 8px 24px rgba(255, 255, 255, 0.18);
+}
+
 .links-identity {
   display: grid;
   grid-template-columns: 116px minmax(0, 1fr);
@@ -1729,6 +1776,16 @@ body.is-leaving .page-wipe {
 
   .links-shell {
     padding: 42px 0 54px;
+  }
+
+  .links-topbar {
+    justify-content: flex-start;
+    margin-bottom: 18px;
+  }
+
+  .links-language-switch {
+    width: 100%;
+    max-width: 220px;
   }
 
   .links-identity {

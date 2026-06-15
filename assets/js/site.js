@@ -129,7 +129,95 @@
       document.body.appendChild(wipe);
     }
 
+    initBilingualLinks();
     initSkillset();
+  };
+
+  const initBilingualLinks = () => {
+    const root = document.querySelector("[data-bilingual-links]");
+    if (!root) return;
+
+    const switches = Array.from(root.querySelectorAll("[data-links-lang-switch]"));
+    const normalizeLang = (value) => {
+      const raw = String(value || "").toLowerCase();
+      return raw === "zh" || raw === "zh-hk" || raw === "zh_hk" ? "zh" : "en";
+    };
+    const readStoredLang = () => {
+      try {
+        return window.localStorage.getItem("links-lang");
+      } catch {
+        return "";
+      }
+    };
+    const writeStoredLang = (lang) => {
+      try {
+        window.localStorage.setItem("links-lang", lang);
+      } catch {
+        // Storage may be unavailable in private or locked-down contexts.
+      }
+    };
+    const localizedValue = (element, lang, key) => {
+      const suffix = lang === "zh" ? "Zh" : "En";
+      return element.dataset[`${key}${suffix}`] || "";
+    };
+    const updateUrl = (lang) => {
+      const url = new URL(window.location.href);
+      if (lang === "zh") {
+        url.searchParams.set("lang", "zh");
+      } else {
+        url.searchParams.delete("lang");
+      }
+      if (url.hash === "#zh" || url.hash === "#en") url.hash = "";
+      try {
+        window.history.replaceState(null, "", url);
+      } catch {
+        // Some embedded or file contexts can reject history mutations.
+      }
+    };
+    const setLang = (nextLang, save = true) => {
+      const lang = normalizeLang(nextLang);
+      const htmlLang = lang === "zh" ? "zh-HK" : "en-HK";
+
+      root.dataset.linksLang = lang;
+      document.documentElement.lang = htmlLang;
+      document.title = localizedValue(root, lang, "title") || document.title;
+
+      const description = document.querySelector('meta[name="description"][data-i18n-content-en][data-i18n-content-zh]');
+      if (description) {
+        description.setAttribute("content", localizedValue(description, lang, "i18nContent"));
+      }
+
+      document.querySelectorAll("[data-i18n-en][data-i18n-zh]").forEach((element) => {
+        element.textContent = localizedValue(element, lang, "i18n");
+      });
+      document.querySelectorAll("[data-i18n-alt-en][data-i18n-alt-zh]").forEach((element) => {
+        element.setAttribute("alt", localizedValue(element, lang, "i18nAlt"));
+      });
+      document.querySelectorAll("[data-i18n-aria-label-en][data-i18n-aria-label-zh]").forEach((element) => {
+        element.setAttribute("aria-label", localizedValue(element, lang, "i18nAriaLabel"));
+      });
+      root.querySelectorAll("[data-href-en][data-href-zh]").forEach((element) => {
+        element.setAttribute("href", localizedValue(element, lang, "href"));
+      });
+
+      switches.forEach((button) => {
+        button.setAttribute("aria-pressed", String(normalizeLang(button.dataset.linksLangSwitch) === lang));
+      });
+
+      if (save) writeStoredLang(lang);
+      updateUrl(lang);
+    };
+
+    const params = new URLSearchParams(window.location.search);
+    const rawHashLang = window.location.hash.replace(/^#/, "").toLowerCase();
+    const hashLang = ["en", "en-hk", "zh", "zh-hk", "zh_hk"].includes(rawHashLang) ? rawHashLang : "";
+    const requestedLang = params.get("lang") || hashLang;
+    const initialLang = normalizeLang(requestedLang || readStoredLang() || document.documentElement.lang);
+
+    switches.forEach((button) => {
+      button.addEventListener("click", () => setLang(button.dataset.linksLangSwitch));
+    });
+    setLang(initialLang, Boolean(requestedLang));
   };
 
   const initSkillset = () => {
