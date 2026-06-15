@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://www.noodledostuff.com/</loc>
+    <xhtml:link rel="alternate" hreflang="en-HK" href="https://www.noodledostuff.com/" />
+    <xhtml:link rel="alternate" hreflang="zh-HK" href="https://www.noodledostuff.com/zh-hk/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.noodledostuff.com/" />
+  </url>
+  <url>
+    <loc>https://www.noodledostuff.com/work.html</loc>
+    <xhtml:link rel="alternate" hreflang="en-HK" href="https://www.noodledostuff.com/work.html" />
+    <xhtml:link rel="alternate" hreflang="zh-HK" href="https://www.noodledostuff.com/zh-hk/work.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.noodledostuff.com/work.html" />
+  </url>
+  <url>
+    <loc>https://www.noodledostuff.com/skillset.html</loc>
+    <xhtml:link rel="alternate" hreflang="en-HK" href="https://www.noodledostuff.com/skillset.html" />
+    <xhtml:link rel="alternate" hreflang="zh-HK" href="https://www.noodledostuff.com/zh-hk/skillset.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.noodledostuff.com/skillset.html" />
+  </url>
+  <url>
+    <loc>https://www.noodledostuff.com/about.html</loc>
+    <xhtml:link rel="alternate" hreflang="en-HK" href="https://www.noodledostuff.com/about.html" />
+    <xhtml:link rel="alternate" hreflang="zh-HK" href="https://www.noodledostuff.com/zh-hk/about.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.noodledostuff.com/about.html" />
+  </url>
+  <url>
+    <loc>https://www.noodledostuff.com/contact.html</loc>
+    <xhtml:link rel="alternate" hreflang="en-HK" href="https://www.noodledostuff.com/contact.html" />
+    <xhtml:link rel="alternate" hreflang="zh-HK" href="https://www.noodledostuff.com/zh-hk/contact.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.noodledostuff.com/contact.html" />
+  </url>
+  <url>
+    <loc>https://www.noodledostuff.com/links/</loc>
+    <xhtml:link rel="alternate" hreflang="en-HK" href="https://www.noodledostuff.com/links/" />
+    <xhtml:link rel="alternate" hreflang="zh-HK" href="https://www.noodledostuff.com/links/?lang=zh" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.noodledostuff.com/links/" />
+  </url>
+</urlset>

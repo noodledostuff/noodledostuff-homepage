@@ -82,11 +82,11 @@
   const skillUi = {
     en: {
       active: "Visible",
-      assets: "Local SVG assets",
+      assets: "Documented uses",
       copied: "Copied",
       copy: "Copy summary",
       featured: "Featured stack",
-      level: "Production fluency",
+      level: "Evidence level",
       random: "Spotlight",
       related: "Related stack",
       reset: "Reset",
@@ -95,16 +95,43 @@
     },
     zh: {
       active: "顯示中",
-      assets: "本機 SVG 素材",
+      assets: "實務項目",
       copied: "已複製",
       copy: "複製摘要",
-      featured: "焦點技術",
-      level: "製作熟練度",
-      random: "聚焦",
+      featured: "重點技術",
+      level: "實務等級",
+      random: "隨機聚焦",
       related: "相關技術",
       reset: "重設",
-      selected: "已選",
+      selected: "已選擇",
       total: "工具",
+    },
+  };
+
+  const skillLevelLabels = {
+    en: [
+      { min: 90, label: "Core production use" },
+      { min: 84, label: "Frequent delivery use" },
+      { min: 78, label: "Production support" },
+      { min: 0, label: "Working knowledge" },
+    ],
+    zh: [
+      { min: 90, label: "核心製作工具" },
+      { min: 84, label: "常用交付工具" },
+      { min: 78, label: "製作支援工具" },
+      { min: 0, label: "具備操作經驗" },
+    ],
+  };
+
+  const skillTypeLabels = {
+    en: {},
+    zh: {
+      AI: "AI",
+      Craft: "製作工藝",
+      Hardware: "硬件",
+      Infrastructure: "基建",
+      Software: "軟件",
+      Workflow: "流程",
     },
   };
 
@@ -243,10 +270,13 @@
 
     const normalize = (value) => (value || "").trim().toLowerCase();
 
-    const getSkillName = (card) => card.dataset.skillName || card.querySelector(".skill-name")?.textContent.trim() || card.textContent.trim();
+    const getSkillKey = (card) => card.dataset.skillName || card.querySelector(".skill-name")?.textContent.trim() || card.textContent.trim();
+    const getSkillName = (card) => card.dataset.skillLabel || card.querySelector(".skill-name")?.textContent.trim() || getSkillKey(card);
     const getGroups = (card) => (card.dataset.groups || "").split(/\s+/).filter(Boolean);
-    const getMeta = (card) => skillVisuals[getSkillName(card)] || { icon: "agentic-development.svg", level: 72, type: "Workflow", accent: "#86bdff" };
+    const getMeta = (card) => skillVisuals[getSkillKey(card)] || { icon: "agentic-development.svg", level: 72, type: "Workflow", accent: "#86bdff" };
     const getIconSrc = (card) => iconBase + getMeta(card).icon;
+    const getLevelLabel = (level) => skillLevelLabels[locale].find((item) => level >= item.min).label;
+    const getTypeLabel = (type) => skillTypeLabels[locale]?.[type] || type;
 
     const enhanceHero = () => {
       const hero = document.querySelector(".hero--compact");
@@ -352,7 +382,7 @@
         if (!card.querySelector(".skill-card__meta")) {
           const metaLine = document.createElement("span");
           metaLine.className = "skill-card__meta";
-          metaLine.innerHTML = `<span>${meta.type}</span><span>${meta.level}</span>`;
+          metaLine.innerHTML = `<span>${getTypeLabel(meta.type)}</span><span>${getLevelLabel(meta.level)}</span>`;
           card.appendChild(metaLine);
         }
 
@@ -413,7 +443,7 @@
       const title = document.querySelector("[data-skill-hero-title]");
       if (title) title.textContent = getSkillName(card);
       document.querySelectorAll("[data-skill-orbit-name]").forEach((button) => {
-        button.classList.toggle("is-active", button.dataset.skillOrbitName === getSkillName(card));
+        button.classList.toggle("is-active", button.dataset.skillOrbitName === getSkillKey(card));
       });
     };
 
@@ -421,9 +451,9 @@
       const related = root.querySelector("[data-skill-related]");
       if (!related) return;
       const groups = getGroups(card);
-      const current = getSkillName(card);
+      const current = getSkillKey(card);
       const matches = cards
-        .filter((item) => getSkillName(item) !== current && getGroups(item).some((group) => groups.includes(group)))
+        .filter((item) => getSkillKey(item) !== current && getGroups(item).some((group) => groups.includes(group)))
         .slice(0, 5);
       related.innerHTML = "";
       matches.forEach((item) => {
@@ -454,7 +484,7 @@
       if (title) title.textContent = getSkillName(card);
       if (copy) copy.textContent = card.dataset.detail || "";
       if (icon) icon.src = getIconSrc(card);
-      if (kind) kind.textContent = `${meta.type} / ${meta.level}`;
+      if (kind) kind.textContent = `${getTypeLabel(meta.type)} / ${getLevelLabel(meta.level)}`;
       if (meter) meter.style.width = `${meta.level}%`;
       if (tags) {
         tags.innerHTML = "";
@@ -475,7 +505,7 @@
 
       cards.forEach((card) => {
         const groups = (card.dataset.groups || "").split(/\s+/);
-        const haystack = normalize(`${getSkillName(card)} ${card.textContent} ${card.dataset.search || ""} ${card.dataset.detail || ""} ${getMeta(card).type}`);
+        const haystack = normalize(`${getSkillKey(card)} ${getSkillName(card)} ${card.textContent} ${card.dataset.search || ""} ${card.dataset.detail || ""} ${getMeta(card).type} ${getTypeLabel(getMeta(card).type)}`);
         const matchesGroup = activeFilter === "all" || groups.includes(activeFilter);
         const matchesQuery = !query || haystack.includes(query);
         const show = matchesGroup && matchesQuery;
@@ -578,7 +608,7 @@
     root.querySelector("[data-skill-copy-summary]")?.addEventListener("click", copySummary);
     document.querySelectorAll("[data-skill-orbit-name]").forEach((button) => {
       button.addEventListener("click", () => {
-        const card = cards.find((item) => getSkillName(item) === button.dataset.skillOrbitName);
+        const card = cards.find((item) => getSkillKey(item) === button.dataset.skillOrbitName);
         if (!card) return;
         userSelected = true;
         updateInspector(card);
