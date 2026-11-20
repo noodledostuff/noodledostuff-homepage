@@ -1,4 +1,6 @@
 import * as T from '../vendor/three/three.module.min.js';
+import {studioGear} from './studio-gear.js';
+import {addGlassDistrict} from './skyline.js';
 import {dressRooftops,wetDeck} from './roof-detail.js';
 import {createOperator} from './operator.js';
 import {cameraShot} from './shots.js';
@@ -12,7 +14,7 @@ async function mount(stage) {
   const canvas=stage.querySelector('canvas');
   const renderer=new T.WebGLRenderer({canvas,alpha:true,antialias:true,powerPreference:'low-power'});
   const scene=new T.Scene(), camera=new T.PerspectiveCamera(32,1,.09,200);
-  scene.fog=new T.FogExp2('#30314a',.025);
+  scene.fog=new T.FogExp2('#19263d',.014);
   const city=new T.Group();
   scene.add(city);
   let seed=431;
@@ -146,10 +148,13 @@ async function mount(stage) {
       box(at.x,at.y-.20,at.z,.29,.4+rand()*.17,.025,['#aa8a88','#6499a7','#a5a9ad'][i%3]);
     }
   }
+  // The operator's rooftop is several storeys above the neighbouring tenements.
+  city.children.forEach(mesh=>mesh.position.y-=5.8);
+  addGlassDistrict(city,texture,rand);
   // A soft sky dome still has a horizon when the camera moves.
   const skyTexture=texture(1024,512,(ctx,w,h)=>{
     const grad=ctx.createLinearGradient(0,0,0,h);
-    for(const [p,c] of [[0,'#101731'],[.30,'#24274b'],[.46,'#55547b'],[.54,'#ab7c97'],[.62,'#d9a4a3'],[1,'#514765']])grad.addColorStop(p,c);
+    for(const [p,c] of [[0,'#101731'],[.30,'#24274b'],[.46,'#283349'],[.54,'#493b56'],[.62,'#625069'],[1,'#514765']])grad.addColorStop(p,c);
     ctx.fillStyle=grad;ctx.fillRect(0,0,w,h);
     for(let i=0;i<700;i++){
       ctx.fillStyle='rgba(235,238,255,'+(rand()*.7)+')';
@@ -173,7 +178,7 @@ async function mount(stage) {
     ctx.strokeStyle='#414955';ctx.lineWidth=3;ctx.strokeRect(0,0,w,h);
   });
   floorTex.wrapS=floorTex.wrapT=T.RepeatWrapping;floorTex.repeat.set(15,9);
-  box(0,-.17,.80,22,.30,13,new T.MeshStandardMaterial({map:floorTex,bumpMap:floorTex,bumpScale:.028,roughness:.64}));
+  box(0,-.17,.80,22,.30,13,new T.MeshPhysicalMaterial({map:floorTex,bumpMap:floorTex,bumpScale:.026,roughness:.56,clearcoat:.56,clearcoatRoughness:.22}));
   box(0,.09,-5.65,22,.22,.27,'#55606d');
   for(let i=-10;i<=10;i+=2)box(i,.53,-5.65,.045,.89,.045,'#596878');
   for(const y of [.50,.91])box(0,y,-5.65,22,.037,.048,'#748d9b');
@@ -216,7 +221,7 @@ async function mount(stage) {
   Object.assign(cityKey.shadow.camera,{left:-12,right:12,top:12,bottom:-12,near:.3,far:38});
   cityKey.shadow.camera.updateProjectionMatrix();cityKey.shadow.normalBias=.024;
   scene.add(hemi.clone(),cityKey,cityKey.target);
-  for(const [x,y,z,color,power] of [[1.02,1.43,-5.65,0xffbf80,9],[-2.8,3,-10.3,0xff5792,18],[3.2,.25,-12.1,0x65efe0,14]]){
+  for(const [x,y,z,color,power] of [[1.35,.9,-13.9,0xff475d,12],[1.02,1.43,-5.65,0xffbf80,9],[-2.8,3,-10.3,0xff5792,18],[3.2,.25,-12.1,0x65efe0,14]]){
     const spill=new T.PointLight(color,power,12,2);spill.position.set(x,y,z);scene.add(spill);
   }
   // Keep repeated window frames, pipes, fans and rails to one draw per material and geometry.
@@ -245,12 +250,19 @@ async function mount(stage) {
     capture.position.set(.4,1.05,-3.5);capture.update(renderer,scene);
     const pmrem=new T.PMREMGenerator(renderer);
     environment?.dispose();environment=pmrem.fromCubemap(probe.texture);
-    scene.environment=environment.texture;water.visible=true;
+    scene.environment=actorScene.environment=environment.texture;water.visible=true;
     probe.dispose();pmrem.dispose();
   }
   bakeEnvironment();
   const operator=await createOperator();
   actorScene.add(operator.root);
+  const equip=studioGear(scene,actorScene,operator.wrist);
+  // Keep the actor sharp in the main composite and depth-tested in the deck's mirror pass.
+  scene.onAfterRender=(activeRenderer,world,view)=>{
+    if(view!==water.camera)return;
+    const clear=activeRenderer.autoClear;
+    activeRenderer.autoClear=false;activeRenderer.render(actorScene,view);activeRenderer.autoClear=clear;
+  };
   const blurred=new T.WebGLRenderTarget(1,1,{depthBuffer:true});
   const screen=new T.Scene(), ortho=new T.OrthographicCamera(-1,1,1,-1,0,1);
   const blur=new T.ShaderMaterial({
@@ -282,6 +294,9 @@ async function mount(stage) {
       varying vec2 uv0;
       void main(){
         vec3 c=texture2D(frameMap,uv0).rgb;
+        float fringe=.00058*smoothstep(.24,.72,length(uv0-.5));
+        c.r=mix(c.r,texture2D(frameMap,uv0+vec2(fringe,0.)).r,.48);
+        c.b=mix(c.b,texture2D(frameMap,uv0-vec2(fringe,0.)).b,.48);
         vec2 delta=(uv0-source.xy)*vec2(aspect,1.);
         float inside=step(0.,source.z)*(1.-smoothstep(.45,.5,max(abs(source.x-.5),abs(source.y-.5))));
         // Sample the composited lamp so foreground silhouettes can mask its flare.
@@ -292,13 +307,16 @@ async function mount(stage) {
         c+=visibility*(vec3(.24,.115,.047)*streak+vec3(.012,.036,.042)*iris);
         float vignette=smoothstep(.18,.78,length(uv0-.5));
         c*=1.-.23*vignette;
-        c=(c*(1.15+.28*c))/(1.+.54*c);
+        c=max(c-vec3(.004,.004,.002),vec3(0.));
+        c=(c*(1.13+.32*c))/(1.+.49*c);
         gl_FragColor=vec4(c,1.);
         #include <colorspace_fragment>
         vec3 hash=fract(vec3(gl_FragCoord.xy,grainFrame)*.1031);
         hash+=dot(hash,hash.yzx+33.33);
         float noise=fract((hash.x+hash.y)*hash.z)-.5;
-        gl_FragColor.rgb+=noise*.025;
+        float scan=sin(gl_FragCoord.y*1.5708);
+        gl_FragColor.rgb*=.996+.004*scan;
+        gl_FragColor.rgb+=noise*.021;
       }`,depthTest:false,depthWrite:false
   });
   const finish=new T.Scene();
@@ -322,7 +340,8 @@ async function mount(stage) {
   function draw(dt){
     const mode=stage.dataset.pose || 'turn';
     if(mode!==previousMode){previousMode=mode;shotStart=time;}
-    const shot=cameraShot(mode,time-shotStart);
+    const skill=stage.dataset.skill || '';
+    const shot=skill && mode==='turn' ? [1.0,3.75,.055] : cameraShot(mode,time-shotStart);
     const portrait=stacked;
     const overlay=stage.hasAttribute('data-open');
     const damping=dt===0 ? 1 : 1-Math.exp(-dt*1.55);
@@ -333,10 +352,11 @@ async function mount(stage) {
     const w=canvas.clientWidth,h=canvas.clientHeight;
     const fraction=portrait ? (overlay ? .43 : .56) : (overlay ? .28 : .325);
     camera.setViewOffset(w,h,(.5-fraction)*w,overlay ? sheetOffset : portrait ? -.105*h : 0,w,h);
-    camera.position.set(Math.sin(angle)*distance,height+.28,Math.cos(angle)*distance);
+    camera.position.set(Math.sin(angle)*distance,height+.14,Math.cos(angle)*distance);
     camera.lookAt(0,height,0);
     operator.root.rotation.y=1.91+.025*Math.sin(time*.31);
-    operator.pose(mode,time,dt);
+    operator.pose(mode,time,dt,skill);
+    equip(skill,time,dt,paused);
     renderFilm();
   }
   function renderFilm(){
@@ -362,7 +382,7 @@ async function mount(stage) {
     blur.uniforms.pixel.value.set(.85/w,.85/h);
     composite.setSize(canvas.width,canvas.height);film.uniforms.aspect.value=w/h;
     stacked=getComputedStyle(stage).getPropertyValue('--stacked').trim()==='1';
-    frameSheet();camera.aspect=w/h;camera.fov=20;camera.updateProjectionMatrix();draw(0);stage.classList.add('scene-ready');
+    frameSheet();camera.aspect=w/h;camera.fov=27;camera.updateProjectionMatrix();draw(0);stage.classList.add('scene-ready');
   }
   new ResizeObserver(size).observe(canvas);
   stage.addEventListener('pointermove',e=>{pointer=(e.clientX/stage.clientWidth-.5)*2;});

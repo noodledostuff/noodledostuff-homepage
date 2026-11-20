@@ -63,7 +63,22 @@ export async function createOperator() {
     segment(.64,.69,.054,.054,light);
   }
   const rotation=new T.Euler(), target=new T.Quaternion();
-  function pose(mode,t,dt) {
+  const supportHand=bone('leftHand'),gripHand=bone('rightHand');
+  const supportArm=[bone('leftLowerArm'),bone('leftUpperArm')];
+  const gripTarget=new T.Vector3(),tip=new T.Vector3(),aim=new T.Vector3(),swing=new T.Quaternion();
+  function supportLens(){
+    // Work in each joint's local frame so the left palm follows the lens as the right wrist rises.
+    gripHand.getWorldPosition(gripTarget);gripTarget.x+=.09;gripTarget.y+=.005;gripTarget.z+=.014;
+    for(let pass=0;pass<4;pass++){
+      for(const joint of supportArm){
+        joint.worldToLocal(supportHand.getWorldPosition(tip)).normalize();
+        joint.worldToLocal(aim.copy(gripTarget)).normalize();
+        swing.setFromUnitVectors(tip,aim);
+        joint.quaternion.multiply(swing);
+      }
+    }
+  }
+  function pose(mode,t,dt,skill) {
     const breath=Math.sin(t*.84), sway=Math.sin(t*.39), lean=mode==='lean', gaze=mode==='gaze', rear=mode==='rear';
     const blend=dt===0?1:1-Math.exp(-dt*1.9);
     function turn(name,x,y,z) {
@@ -72,15 +87,24 @@ export async function createOperator() {
       target.setFromEuler(rotation.set(x,y,z,'YXZ'));
       joint.quaternion.slerp(target,blend);
     }
+    // Wrist and elbow cycles keep each tool in use between camera changes.
+    const reach=Math.sin(t*.71),fine=Math.sin(t*1.14);
+    const action={
+      cinema:[-.78,.17,1.08,1.77+.10*sway,-.47,.10],
+      edit:[-.53+.07*reach,.04,1.12,1.37+.18*reach,-.83,.24],
+      model:[-.64+.13*reach,.10+.09*fine,1.12,1.59+.22*fine,-.74,.13],
+      mocap:[-.49+.28*reach,.12+.21*sway,1.05+.24*sway,1.02+.40*reach,-.76,.02],
+      live:[-.59,.18,1.22,1.92+.08*reach,-.88,-.04]
+    }[skill];
     turn('hips',0,.08,.04);
     turn('spine',lean?.14:-.04,.12+.02*sway,-.07);
     turn('chest',.017*breath,lean?-.38:-.30,.10);
     turn('neck',lean?.10:-.02,-.36,.09);
-    turn('head',gaze?-.12:lean?.14:-.05, rear?-.68:-.99+.08*sway, -.09+.025*breath);
+    turn('head',action?action[5]:gaze?-.12:lean?.14:-.05,action?action[4]+.05*sway:rear?-.68:-.99+.08*sway,-.09+.025*breath);
     turn('leftUpperArm',-.20,-.12,-1.42+.035*sway);
-    turn('rightUpperArm',gaze?-.52:-.30,.13,1.30);
-    turn('leftLowerArm',0,-.74,.19);
-    turn('rightLowerArm',0,gaze?1.64:.74, -.21);
+    turn('rightUpperArm',action?action[0]:gaze?-.52:-.30,action?action[1]:.13,action?action[2]:1.30);
+    turn('leftLowerArm',skill==='cinema'?-.26:0,skill==='cinema'?-1.25:skill==='edit'?-.98+.16*fine:-.74,.19);
+    turn('rightLowerArm',0,action?action[3]:gaze?1.64:.74,-.21);
     turn('leftHand',-.10,.24,.09);
     turn('rightHand',.03,-.29,.12);
     turn('leftUpperLeg',.02,0,-.06);
@@ -88,14 +112,15 @@ export async function createOperator() {
     for(const side of ['left','right']){
       const sign=side==='left'?-1:1;
       for(const finger of ['Index','Middle','Ring','Little']){
-        turn(side+finger+'Proximal',0,0,sign*(gaze?.39:.26));
+        turn(side+finger+'Proximal',0,0,sign*(action && side==='right'?.79:gaze?.39:.26));
         turn(side+finger+'Intermediate',0,0,sign*.31);
       }
     }
     vrm.expressionManager?.setValue('blink',Math.pow(Math.max(0,Math.cos(t*1.06+2.0)),235));
     vrm.expressionManager?.setValue('happy',lean?.22:.09);
+    if(skill==='cinema')supportLens();
     vrm.update(dt);
   }
   pose('turn',0,0);
-  return {root,pose};
+  return {root,pose,wrist:raw('rightHand')};
 }

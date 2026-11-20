@@ -110,6 +110,7 @@ export function dressRooftops(city, box, texture, sign, rand) {
     }
     box(x+.24,top+.39,front-1.65,width*.52,.75,1.48,wall);
   }
+  const streetStart=city.children.length;
   tenement(-4.25,-11.4,3.55,2.85,8,'#858888',true);
   tenement(2.85,-13.2,4.05,1.55,9,'#b5a390',true);
   tenement(6.65,-14.9,3.45,7.1,10,'#8b9e98',false);
@@ -123,6 +124,7 @@ export function dressRooftops(city, box, texture, sign, rand) {
     for(let i=0;i<5;i++)box(x,y+1.17,z+(i-2)*.11,.62-.055*i,.018,.018,metal);
     box(x,y+1.17,z,.025,.025,.68,dark);
   }
+  city.children.slice(streetStart).forEach(part=>part.position.y-=4.55);
   // Water tanks, cable trays and condenser service runs sit inside the parapet.
   for (const [x,z,r] of [[-1.86,-5.05,.33],[-3.17,-5.33,.48]]){
     const y=.78;
@@ -179,7 +181,7 @@ export function wetDeck() {
         vec3 reflection=texture2D(tDiffuse,uv).rgb*.5+
           (texture2D(tDiffuse,uv+vec2(.003,0)).rgb+texture2D(tDiffuse,uv-vec2(.003,0)).rgb)*.25;
         float grazing=1.-abs(normalize(cameraPosition-world).y);
-        gl_FragColor=vec4(reflection*vec3(.90,.96,1.),water*(.14+.75*grazing*grazing));
+        gl_FragColor=vec4(reflection*vec3(.90,.96,1.),water*(.23+.76*grazing*grazing));
         #include <colorspace_fragment>
       }`
   };

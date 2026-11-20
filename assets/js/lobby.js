@@ -102,31 +102,44 @@
   function tree(source) {
     const filters=[...source.querySelectorAll('[data-skill-filter]')].filter(b=>b.dataset.skillFilter!=='all');
     const cards=[...source.querySelectorAll('[data-skill-card]')];
-    body.innerHTML='<div class="constellation"><svg class="tree-lines" aria-hidden="true"></svg><div class="tree-root"><select></select></div><div class="tree-types"></div><div class="tree-leaves"></div></div><div class="node-detail" aria-live="polite"><strong></strong><p></p></div>';
-    const graph=body.querySelector('.constellation'), branch=graph.querySelector('select');
-    const types=graph.querySelector('.tree-types'), leaves=graph.querySelector('.tree-leaves'), lines=graph.querySelector('svg');
-    branch.setAttribute('aria-label',tr('Production discipline','製作範疇'));
-    filters.forEach(f=>branch.add(new Option(f.textContent.trim(),f.dataset.skillFilter)));
-    let activeType,activeLeaf;
+    body.innerHTML='<nav class="discipline-tabs"></nav><div class="constellation"><svg class="tree-lines" aria-hidden="true"></svg><div class="tree-root"><i aria-hidden="true">◇</i><strong></strong></div><div class="tree-types"></div><div class="tree-leaves"></div></div><div class="node-detail" aria-live="polite"><img alt=""><div><strong></strong><p></p></div></div>';
+    const graph=body.querySelector('.constellation'),root=graph.querySelector('.tree-root');
+    const tabs=body.querySelector('.discipline-tabs'),detail=body.querySelector('.node-detail');
+    const types=graph.querySelector('.tree-types'),leaves=graph.querySelector('.tree-leaves'),lines=graph.querySelector('svg');
+    tabs.setAttribute('aria-label',tr('Production discipline','製作範疇'));
+    let activeType,activeLeaf,branch;
+    const branchForKit={cinema:'media',edit:'media',model:'vp',mocap:'capture',live:'events'};
+    for(const filter of filters){
+      const tab=action(filter.textContent.trim(),()=>{
+        branch=filter.dataset.skillFilter;
+        for(const other of tabs.children)other.setAttribute('aria-pressed',String(other===tab));
+        root.querySelector('strong').textContent=tab.textContent;
+        grow();
+      });
+      tab.dataset.branch=filter.dataset.skillFilter;tabs.append(tab);
+    }
     function drawEdges(){
       if(!graph.isConnected)return;
       const bounds=graph.getBoundingClientRect();
       lines.replaceChildren();
       function edge(from,to,on){
-        const a=from.getBoundingClientRect(),b=to.getBoundingClientRect(),x=a.x+a.width/2-bounds.x,y=a.bottom-bounds.y,tx=b.x+b.width/2-bounds.x,ty=b.top-bounds.y;
+        const a=from.getBoundingClientRect(),b=to.getBoundingClientRect();
+        const x=a.right-bounds.left,y=a.top+a.height/2-bounds.top;
+        const tx=b.left-bounds.left,ty=b.top+b.height/2-bounds.top;
         const path=document.createElementNS('http://www.w3.org/2000/svg','path');
-        path.setAttribute('d',`M ${x} ${y} C ${x} ${(y+ty)/2}, ${tx} ${(y+ty)/2}, ${tx} ${ty}`);
+        const mid=x+(tx-x)*.5;
+        path.setAttribute('d',`M ${x} ${y} H ${mid} V ${ty} H ${tx}`);
         if(on)path.classList.add('active');
         lines.append(path);
       }
-      for(const button of types.children)edge(branch,button,button===activeType);
+      for(const button of types.children)edge(root.querySelector('i'),button,button===activeType);
       if(activeType)for(const button of leaves.children)edge(activeType,button,button===activeLeaf);
     }
     const typeNames={Software:'軟件',Hardware:'硬件',Workflow:'流程',Infrastructure:'基建',Craft:'製作工藝',AI:'AI'};
     function grow(){
       types.replaceChildren();leaves.replaceChildren();
       const groups=new Map();
-      for(const card of cards.filter(c=>c.dataset.groups.split(/\s+/).includes(branch.value))){
+      for(const card of cards.filter(c=>c.dataset.groups.split(/\s+/).includes(branch))){
         const meta=window.skillVisuals[card.dataset.skillName];
         if(!meta)continue;
         if(!groups.has(meta.type))groups.set(meta.type,[]);
@@ -142,8 +155,9 @@
             const leaf=action(name,()=>{
               activeLeaf=leaf;
               for(const btn of leaves.children)btn.setAttribute('aria-pressed',String(btn===leaf));
-              body.querySelector('.node-detail strong').textContent=name;
-              body.querySelector('.node-detail p').textContent=card.dataset.detail;
+              detail.querySelector('strong').textContent=name;
+              detail.querySelector('img').src=img.src;
+              detail.querySelector('p').textContent=card.dataset.detail;
               selectShot(type==='Hardware'?'lean':type==='Workflow'?'turn':'gaze');
               drawEdges();
             });
@@ -152,11 +166,17 @@
           });
           leaves.firstElementChild?.click();
         });
+        const symbols={Software:'layer',Hardware:'idle',Workflow:'tree',Infrastructure:'shield',Craft:'frame',AI:'gem'};
+        const glyph=document.createElementNS('http://www.w3.org/2000/svg','svg');
+        glyph.setAttribute('aria-hidden','true');
+        const use=document.createElementNS(glyph.namespaceURI,'use');use.setAttribute('href',asset+'lobby-icons.svg#'+(symbols[type]||'layer'));
+        glyph.append(use);b.prepend(glyph);
         types.append(b);
       });
       types.firstElementChild?.click();
     }
-    branch.addEventListener('change',grow);grow();
+    const initial=branchForKit[stage.dataset.skill] || 'vp';
+    (tabs.querySelector('[data-branch="'+initial+'"]') || tabs.firstElementChild).click();
     const observer=new ResizeObserver(drawEdges);observer.observe(graph);
     dialog.addEventListener('panelchange',()=>observer.disconnect(),{once:true});
   }
