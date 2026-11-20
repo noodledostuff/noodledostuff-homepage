@@ -3,62 +3,7 @@
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const canHover = window.matchMedia("(hover: hover) and (pointer: fine)");
 
-  const skillVisuals = {
-    "Unreal Engine": { icon: "unreal-engine.svg", level: 96, type: "Software", accent: "#4d9bff" },
-    "nDisplay": { icon: "ndisplay.svg", level: 92, type: "Workflow", accent: "#29d1c4" },
-    "LED Walls": { icon: "led-walls.svg", level: 91, type: "Hardware", accent: "#ff7d5c" },
-    "Camera Tracking": { icon: "camera-tracking.svg", level: 88, type: "Hardware", accent: "#f0bd5a" },
-    "Lens Calibration": { icon: "lens-calibration.svg", level: 86, type: "Workflow", accent: "#86bdff" },
-    "OCIO": { icon: "ocio.svg", level: 84, type: "Workflow", accent: "#ffb18f" },
-    "Timecode & Genlock": { icon: "timecode-genlock.svg", level: 87, type: "Hardware", accent: "#29d1c4" },
-    "LiveLink": { icon: "livelink.svg", level: 89, type: "Workflow", accent: "#4d9bff" },
-    "NDI": { icon: "ndi.svg", level: 92, type: "Software", accent: "#29d1c4" },
-    "Blackmagic Ultimatte": { icon: "blackmagic-ultimatte.svg", level: 82, type: "Hardware", accent: "#ff7d5c" },
-    "Blackmagic DeckLink": { icon: "blackmagic-decklink.svg", level: 86, type: "Hardware", accent: "#f0bd5a" },
-    "Spout": { icon: "spout.svg", level: 80, type: "Workflow", accent: "#86bdff" },
-    "Rokoko": { icon: "rokoko.svg", level: 83, type: "Hardware", accent: "#29d1c4" },
-    "CHINGMU": { icon: "chingmu.svg", level: 80, type: "Hardware", accent: "#ff7d5c" },
-    "AI Visual Mocap": { icon: "ai-visual-mocap.svg", level: 82, type: "AI", accent: "#f0bd5a" },
-    "Virtual Camera": { icon: "virtual-camera.svg", level: 90, type: "Hardware", accent: "#4d9bff" },
-    "LiveLink Face": { icon: "livelink-face.svg", level: 86, type: "Software", accent: "#29d1c4" },
-    "MetaHuman": { icon: "metahuman.svg", level: 82, type: "Software", accent: "#86bdff" },
-    "DaVinci Resolve": { icon: "davinci-resolve.svg", level: 90, type: "Software", accent: "#4d9bff" },
-    "Adobe Premiere Pro": { icon: "adobe-premiere-pro.svg", level: 90, type: "Software", accent: "#7c8cff" },
-    "Adobe After Effects": { icon: "adobe-after-effects.svg", level: 86, type: "Software", accent: "#a98bff" },
-    "Photoshop": { icon: "photoshop.svg", level: 84, type: "Software", accent: "#4d9bff" },
-    "Illustrator": { icon: "illustrator.svg", level: 80, type: "Software", accent: "#ff9d45" },
-    "Fusion": { icon: "fusion.svg", level: 78, type: "Software", accent: "#f0bd5a" },
-    "Blender": { icon: "blender.svg", level: 82, type: "Software", accent: "#ff7d5c" },
-    "Lightroom": { icon: "lightroom.svg", level: 80, type: "Software", accent: "#4d9bff" },
-    "Camera Operation & Lighting": { icon: "camera-lighting.svg", level: 90, type: "Craft", accent: "#f0bd5a" },
-    "Resolume Arena": { icon: "resolume-arena.svg", level: 82, type: "Software", accent: "#ff7d5c" },
-    "vMix": { icon: "vmix.svg", level: 84, type: "Software", accent: "#4d9bff" },
-    "HiRender": { icon: "hirender.svg", level: 78, type: "Software", accent: "#86bdff" },
-    "Projection Mapping": { icon: "projection-mapping.svg", level: 84, type: "Workflow", accent: "#f0bd5a" },
-    "Dante": { icon: "dante.svg", level: 76, type: "Hardware", accent: "#29d1c4" },
-    "Sonobus": { icon: "sonobus.svg", level: 74, type: "Software", accent: "#86bdff" },
-    "Avolites": { icon: "avolites.svg", level: 76, type: "Hardware", accent: "#f0bd5a" },
-    "DMX": { icon: "dmx.svg", level: 82, type: "Workflow", accent: "#ff7d5c" },
-    "TouchDesigner": { icon: "touchdesigner.svg", level: 78, type: "Software", accent: "#29d1c4" },
-    "Unity": { icon: "unity.svg", level: 80, type: "Software", accent: "#86bdff" },
-    "SteamVR / Vive": { icon: "steamvr-vive.svg", level: 78, type: "Hardware", accent: "#4d9bff" },
-    "Go": { icon: "go.svg", level: 84, type: "Software", accent: "#29d1c4" },
-    "C++": { icon: "cpp.svg", level: 78, type: "Software", accent: "#4d9bff" },
-    "JavaScript": { icon: "javascript.svg", level: 86, type: "Software", accent: "#f0bd5a" },
-    "Python": { icon: "python.svg", level: 86, type: "Software", accent: "#86bdff" },
-    "C#": { icon: "csharp.svg", level: 76, type: "Software", accent: "#a98bff" },
-    "Linux CLI": { icon: "linux-cli.svg", level: 86, type: "Infrastructure", accent: "#f0bd5a" },
-    "Networking": { icon: "networking.svg", level: 88, type: "Infrastructure", accent: "#29d1c4" },
-    "Docker": { icon: "docker.svg", level: 82, type: "Infrastructure", accent: "#4d9bff" },
-    "Proxmox": { icon: "proxmox.svg", level: 80, type: "Infrastructure", accent: "#ff7d5c" },
-    "TrueNAS": { icon: "truenas.svg", level: 78, type: "Infrastructure", accent: "#29d1c4" },
-    "Git / Perforce": { icon: "git-perforce.svg", level: 86, type: "Software", accent: "#ff7d5c" },
-    "ComfyUI": { icon: "comfyui.svg", level: 80, type: "AI", accent: "#a98bff" },
-    "Stable Diffusion / Flux": { icon: "stable-diffusion-flux.svg", level: 82, type: "AI", accent: "#f0bd5a" },
-    "Kling": { icon: "kling.svg", level: 74, type: "AI", accent: "#ff7d5c" },
-    "LLMs": { icon: "llms.svg", level: 86, type: "AI", accent: "#86bdff" },
-    "Agentic Development": { icon: "agentic-development.svg", level: 84, type: "AI", accent: "#29d1c4" },
-  };
+  const skillVisuals = window.skillVisuals;
 
   const skillGroups = {
     en: {
@@ -134,17 +79,6 @@
       Workflow: "流程",
     },
   };
-
-  const featuredSkills = [
-    "Unreal Engine",
-    "NDI",
-    "DaVinci Resolve",
-    "Adobe After Effects",
-    "Blender",
-    "TouchDesigner",
-    "Docker",
-    "ComfyUI",
-  ];
 
   const ready = () => {
     document.body.classList.add("page-ready");
@@ -278,47 +212,6 @@
     const getLevelLabel = (level) => skillLevelLabels[locale].find((item) => level >= item.min).label;
     const getTypeLabel = (type) => skillTypeLabels[locale]?.[type] || type;
 
-    const enhanceHero = () => {
-      const hero = document.querySelector(".hero--compact");
-      const heroInner = hero?.querySelector(".hero-inner");
-      if (!hero || !heroInner || heroInner.querySelector("[data-skill-orbit]")) return;
-
-      hero.classList.add("skill-hero-enhanced");
-      heroInner.classList.add("skill-hero-inner");
-
-      const stage = document.createElement("div");
-      stage.className = "skill-hero-stage";
-      stage.setAttribute("aria-label", labels.featured);
-
-      const ring = document.createElement("div");
-      ring.className = "skill-orbit";
-      ring.dataset.skillOrbit = "";
-
-      featuredSkills.forEach((name, index) => {
-        const meta = skillVisuals[name];
-        const button = document.createElement("button");
-        button.className = "skill-orbit__item";
-        button.type = "button";
-        button.dataset.skillOrbitName = name;
-        button.style.setProperty("--orbit-index", index);
-        button.style.setProperty("--skill-accent", meta.accent);
-        button.setAttribute("aria-label", `${labels.selected}: ${name}`);
-        button.innerHTML = `<img src="${iconBase + meta.icon}" alt="" loading="lazy" width="38" height="38">`;
-        ring.appendChild(button);
-      });
-
-      const readout = document.createElement("div");
-      readout.className = "skill-hero-readout";
-      readout.innerHTML = `
-        <span>${labels.featured}</span>
-        <strong data-skill-hero-title>${featuredSkills[0]}</strong>
-        <button class="skill-random-button" type="button" data-skill-random>${labels.random}</button>
-      `;
-
-      stage.append(ring, readout);
-      heroInner.appendChild(stage);
-    };
-
     const enhanceControls = () => {
       if (root.querySelector(".skill-dashboard")) return;
       const controls = root.querySelector(".skill-controls");
@@ -439,14 +332,6 @@
       });
     };
 
-    const updateHero = (card) => {
-      const title = document.querySelector("[data-skill-hero-title]");
-      if (title) title.textContent = getSkillName(card);
-      document.querySelectorAll("[data-skill-orbit-name]").forEach((button) => {
-        button.classList.toggle("is-active", button.dataset.skillOrbitName === getSkillKey(card));
-      });
-    };
-
     const renderRelated = (card) => {
       const related = root.querySelector("[data-skill-related]");
       if (!related) return;
@@ -494,7 +379,6 @@
           tags.appendChild(item);
         });
       }
-      updateHero(card);
       renderRelated(card);
     };
 
@@ -574,7 +458,6 @@
       }
     };
 
-    enhanceHero();
     enhanceControls();
     enhanceInspector();
     enhanceCards();
@@ -603,23 +486,17 @@
       applyFilters();
     });
     root.querySelectorAll("[data-skill-random]").forEach((button) => button.addEventListener("click", spotlight));
-    document.querySelectorAll(".skill-hero-stage [data-skill-random]").forEach((button) => button.addEventListener("click", spotlight));
     root.querySelectorAll("[data-skill-reset]").forEach((button) => button.addEventListener("click", resetFilters));
     root.querySelector("[data-skill-copy-summary]")?.addEventListener("click", copySummary);
-    document.querySelectorAll("[data-skill-orbit-name]").forEach((button) => {
-      button.addEventListener("click", () => {
-        const card = cards.find((item) => getSkillKey(item) === button.dataset.skillOrbitName);
-        if (!card) return;
-        userSelected = true;
-        updateInspector(card);
-        card.scrollIntoView({ behavior: reducedMotion.matches ? "auto" : "smooth", block: "center" });
-      });
-    });
-
     const firstCard = cards[0];
     if (firstCard) updateInspector(firstCard);
     applyFilters();
   };
+
+  if (document.body.classList.contains('game-page')) {
+    document.addEventListener('catalogueopen',initSkillset);
+    return;
+  }
 
   const shouldAnimate = (anchor) => {
     if (reducedMotion.matches) return false;

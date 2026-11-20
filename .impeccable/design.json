@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-20T18:56:51.438697Z",
+  "title": "NoodleDoStuff rooftop portfolio",
+  "extensions": {
+    "breakpoints": [
+      {
+        "name": "Portrait lobby and bottom sheet",
+        "value": "(max-width: 740px) and (max-aspect-ratio: 1/1), (max-aspect-ratio: 4/5)"
+      },
+      {
+        "name": "Short landscape",
+        "value": "(max-height: 500px) and (min-aspect-ratio: 1/1)"
+      }
+    ],
+    "motion": [
+      {
+        "name": "Reduced motion",
+        "value": "(prefers-reduced-motion: reduce)",
+        "purpose": "Start the rooftop paused while keeping shot selection available."
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Selected camera view",
+      "kind": "button",
+      "description": "The active shot tab in the lower-left HUD.",
+      "html": "<button class=\"ds-camera\" type=\"button\" aria-pressed=\"true\">Turn</button>",
+      "css": ".ds-camera{min-width:44px;min-height:30px;padding:4px 10px;background:#bf1964;color:white;border:0;transform:skewX(-12deg);font-weight:700}.ds-camera:focus-visible{outline:3px solid #fff1ad;outline-offset:2px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Timothy Yu’s portfolio as a playable rooftop lobby.",
+    "overview": "An angled cyan work button and four operation tiles sit opposite the rooftop operator.",
+    "keyCharacteristics": [
+      "Staggered hexagonal shortcuts",
+      "Featured LED ICVFX case and work index",
+      "Cinematic city light and deliberate camera moves",
+      "Desktop side panel and portrait bottom sheet"
+    ]
+  }
+}

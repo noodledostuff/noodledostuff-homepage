@@ -1,0 +1,26 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "overused-font",
+        "value": "inter",
+        "files": [
+          "assets/css/lobby.css"
+        ],
+        "createdAt": "2026-11-20T17:52:28.869Z",
+        "reason": "Design decision by Codex: the lobby carries over the portfolio's Inter interface typography, documented in DESIGN.md, and pairs it with an italic serif surname."
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "assets/css/lobby.css"
+        ],
+        "createdAt": "2026-11-20T18:17:02.421Z",
+        "reason": "The reference video's opening frame has a pink vertical rule immediately left of the character name. The lobby nameplate reproduces that HUD detail."
+      }
+    ]
+  }
+}

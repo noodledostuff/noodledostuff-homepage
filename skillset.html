@@ -2,7 +2,7 @@
 <html lang="en-HK">
   <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>Skillset | YU Kwan Yin Timothy</title>
     <meta name="description" content="Evidence-based skill map for YU Kwan Yin Timothy across virtual production, capture, post-production, live events, software, infrastructure and AI tools.">
     <link rel="canonical" href="https://www.noodledostuff.com/skillset.html">
@@ -17,35 +17,16 @@
     <link rel="alternate" hreflang="zh-HK" href="https://www.noodledostuff.com/zh-hk/skillset.html">
     <link rel="alternate" hreflang="en-HK" href="https://www.noodledostuff.com/skillset.html">
     <link rel="alternate" hreflang="x-default" href="https://www.noodledostuff.com/skillset.html">
+    <link rel="stylesheet" href="assets/css/lobby.css">
+    <script src="assets/js/skill-meta.js" defer></script>
     <script src="assets/js/site.js" defer></script>
+    <script src="assets/js/lobby.js" defer></script>
+    <script type="module" src="assets/js/rooftop.js"></script>
   </head>
-  <body>
-    <a class="skip-link" href="#main">Skip to content</a>
-    <header class="site-header">
-      <div class="header-inner">
-        <a class="brand" href="index.html" aria-label="NoodleDoStuff home"><span class="brand-mark" aria-hidden="true"></span><span>NoodleDoStuff</span></a>
-        <nav class="nav" aria-label="Primary navigation">
-          <a href="index.html">Home</a>
-          <a href="work.html">Work</a>
-          <a href="skillset.html" aria-current="page">Skillset</a>
-          <a href="about.html">About</a>
-          <a href="contact.html">Contact</a>
-          <a href="links/">Links</a>
-          <a class="lang-link" href="zh-hk/skillset.html" lang="zh-HK">繁中</a>
-        </nav>
-      </div>
-    </header>
-
-    <main id="main">
-      <section class="hero hero--compact">
-        <div class="hero-inner">
-          <p class="eyebrow">Skillset</p>
-          <h1>Production-used tools and systems.</h1>
-          <p class="hero-copy">A practical map of the software, hardware workflows and technical domains I have used to build stages, run shows, capture performers, finish images and ship production tools.</p>
-        </div>
-      </section>
-
-      <section class="section" aria-labelledby="skillset-title" data-skillset data-all-label="skills">
+  <body class="game-page">
+    <main id="main" class="rooftop" data-pose="turn" data-entry="skills" aria-label="Mong Kok rooftop lobby"></main>
+    <script src="assets/js/hud.js"></script>
+    <template id="record-source"><section class="section" id="catalogue" aria-labelledby="skillset-title" data-skillset data-all-label="skills">
         <div class="section-inner">
           <div class="section-heading">
             <h2 id="skillset-title">Interactive evidence map.</h2>
@@ -139,18 +120,7 @@
           </div>
         </div>
       </section>
-    </main>
-
-    <footer class="site-footer">
-      <div class="footer-inner">
-        <p>&copy; 2026 YU Kwan Yin Timothy. NoodleDoStuff.</p>
-        <div class="footer-links" aria-label="Footer links">
-          <a href="links/">Links</a>
-          <a href="assets/docs/portfolio-yu-kwan-yin-noodledostuff-2025.pdf">Portfolio PDF <span class="file-size">26 MB</span></a>
-          <a href="assets/docs/cv-yu-kwan-yin.pdf">CV PDF <span class="file-size">239 KB</span></a>
-          <a href="mailto:hello@noodledostuff.com">hello@noodledostuff.com</a>
-        </div>
-      </div>
-    </footer>
+    </template>
+    <noscript><main class="offline"><h1>NoodleDoStuff</h1><p>Enable JavaScript to enter the interactive lobby.</p><a href="assets/docs/portfolio-yu-kwan-yin-noodledostuff-2025.pdf">Portfolio PDF</a> · <a href="mailto:hello@noodledostuff.com">Contact</a></main></noscript>
   </body>
 </html>

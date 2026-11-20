@@ -2,7 +2,7 @@
 <html lang="zh-HK">
   <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>技能 | YU Kwan Yin Timothy</title>
     <meta name="description" content="YU Kwan Yin Timothy 的實務技能地圖，涵蓋虛擬製作、動作捕捉、後期製作、現場活動、軟件、基建及 AI 工具。">
     <link rel="canonical" href="https://www.noodledostuff.com/zh-hk/skillset.html">
@@ -17,35 +17,16 @@
     <link rel="alternate" hreflang="en-HK" href="https://www.noodledostuff.com/skillset.html">
     <link rel="alternate" hreflang="zh-HK" href="https://www.noodledostuff.com/zh-hk/skillset.html">
     <link rel="alternate" hreflang="x-default" href="https://www.noodledostuff.com/skillset.html">
+    <link rel="stylesheet" href="../assets/css/lobby.css">
+    <script src="../assets/js/skill-meta.js" defer></script>
     <script src="../assets/js/site.js" defer></script>
+    <script src="../assets/js/lobby.js" defer></script>
+    <script type="module" src="../assets/js/rooftop.js"></script>
   </head>
-  <body>
-    <a class="skip-link" href="#main">跳到主要內容</a>
-    <header class="site-header">
-      <div class="header-inner">
-        <a class="brand" href="../zh-hk/" aria-label="NoodleDoStuff 主頁"><span class="brand-mark" aria-hidden="true"></span><span>NoodleDoStuff</span></a>
-        <nav class="nav" aria-label="主要導覽">
-          <a href="../zh-hk/">主頁</a>
-          <a href="../zh-hk/work.html">作品</a>
-          <a href="../zh-hk/skillset.html" aria-current="page">技能</a>
-          <a href="../zh-hk/about.html">關於</a>
-          <a href="../zh-hk/contact.html">聯絡</a>
-          <a href="../links/?lang=zh">連結</a>
-          <a class="lang-link" href="../skillset.html" lang="en-HK">EN</a>
-        </nav>
-      </div>
-    </header>
-
-    <main id="main">
-      <section class="hero hero--compact">
-        <div class="hero-inner">
-          <p class="eyebrow">技能</p>
-          <h1>實際用於製作的工具與系統。</h1>
-          <p class="hero-copy">這是我在製作棚、現場活動、表演捕捉、後期影像和製作工具中實際使用過的軟件、硬件流程和技術範圍。</p>
-        </div>
-      </section>
-
-      <section class="section" aria-labelledby="skillset-title" data-skillset data-all-label="項技能">
+  <body class="game-page">
+    <main id="main" class="rooftop" data-pose="turn" data-entry="skills" aria-label="旺角天台大廳"></main>
+    <script src="../assets/js/hud.js"></script>
+    <template id="record-source"><section class="section" id="catalogue" aria-labelledby="skillset-title" data-skillset data-all-label="項技能">
         <div class="section-inner">
           <div class="section-heading">
             <h2 id="skillset-title">互動實務地圖。</h2>
@@ -139,18 +120,7 @@
           </div>
         </div>
       </section>
-    </main>
-
-    <footer class="site-footer">
-      <div class="footer-inner">
-        <p>&copy; 2026 YU Kwan Yin Timothy. NoodleDoStuff.</p>
-        <div class="footer-links" aria-label="頁尾連結">
-          <a href="../links/?lang=zh">連結</a>
-          <a href="../assets/docs/portfolio-yu-kwan-yin-noodledostuff-2025.pdf">作品集 PDF <span class="file-size">26 MB</span></a>
-          <a href="../assets/docs/cv-yu-kwan-yin.pdf">履歷 PDF <span class="file-size">239 KB</span></a>
-          <a href="mailto:hello@noodledostuff.com">hello@noodledostuff.com</a>
-        </div>
-      </div>
-    </footer>
+    </template>
+    <noscript><main class="offline"><h1>NoodleDoStuff</h1><p>請啟用 JavaScript 進入互動大廳。</p><a href="../assets/docs/portfolio-yu-kwan-yin-noodledostuff-2025.pdf">作品集</a> · <a href="mailto:hello@noodledostuff.com">Contact</a></main></noscript>
   </body>
 </html>
