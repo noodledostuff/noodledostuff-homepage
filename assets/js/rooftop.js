@@ -1,9 +1,10 @@
 import * as T from '../vendor/three/three.module.min.js';
-import {studioGear} from './studio-gear.js';
 import {addGlassDistrict} from './skyline.js';
+import {studioGear} from './studio-gear.js';
 import {dressRooftops,wetDeck} from './roof-detail.js';
 import {createOperator} from './operator.js';
-import {cameraShot} from './shots.js';
+import {cameraShot,levelUpShot} from './shots.js';
+import {rooftopFilm} from './rooftop-film.js';
 
 const stage=document.querySelector('.rooftop');
 if (stage) {
@@ -14,7 +15,9 @@ async function mount(stage) {
   const canvas=stage.querySelector('canvas');
   const renderer=new T.WebGLRenderer({canvas,alpha:true,antialias:true,powerPreference:'low-power'});
   const scene=new T.Scene(), camera=new T.PerspectiveCamera(32,1,.09,200);
-  scene.fog=new T.FogExp2('#19263d',.014);
+  const depthAvailable=renderer.capabilities.isWebGL2 || renderer.extensions.has('WEBGL_depth_texture');
+  if(!depthAvailable)scene.fog=new T.FogExp2('#26344d',.018);
+  renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.07;
   const city=new T.Group();
   scene.add(city);
   let seed=431;
@@ -120,7 +123,7 @@ async function mount(stage) {
       else ctx.fillText(label,sw/2,sh/2,sw-40);
     });
     box(x,y,z,w+.09,h+.09,.18,'#242b3d');
-    const panel=new T.Mesh(new T.PlaneGeometry(w,h),basic({map}));
+    const panel=new T.Mesh(new T.PlaneGeometry(w,h),new T.MeshStandardMaterial({map,roughness:.32,metalness:.12,emissiveMap:map,emissive:0xffffff,emissiveIntensity:1.5}));
     panel.position.set(x,y,z+.10);city.add(panel);
   }
   sign(-4.67,2.07,-6.65,.79,3.17,'霓虹冰室','#ff8b8e',true);
@@ -169,41 +172,23 @@ async function mount(stage) {
   });
   const moon=new T.Sprite(new T.SpriteMaterial({map:moonMap,transparent:true,depthWrite:false,fog:false}));moon.position.set(7.1,18,-70);moon.scale.set(12,12,1);scene.add(moon);
 
-  const floorTex=texture(256,256,(ctx,w,h)=>{
-    ctx.fillStyle='#596373';ctx.fillRect(0,0,w,h);
-    for(let i=0;i<4800;i++){
-      ctx.fillStyle=rand()>.5?'rgba(255,240,224,.1)':'rgba(15,24,39,.12)';
-      ctx.fillRect(rand()*w,rand()*h,2,1);
-    }
-    ctx.strokeStyle='#414955';ctx.lineWidth=3;ctx.strokeRect(0,0,w,h);
-  });
-  floorTex.wrapS=floorTex.wrapT=T.RepeatWrapping;floorTex.repeat.set(15,9);
-  box(0,-.17,.80,22,.30,13,new T.MeshPhysicalMaterial({map:floorTex,bumpMap:floorTex,bumpScale:.026,roughness:.56,clearcoat:.56,clearcoatRoughness:.22}));
+  const floorTex=await new T.TextureLoader().loadAsync(new URL('../media/roof-concrete.webp',import.meta.url).href);
+  floorTex.colorSpace=T.SRGBColorSpace;
+  floorTex.wrapS=floorTex.wrapT=T.RepeatWrapping;floorTex.repeat.set(8,5);
+  const surfaceMap=floorTex.clone();surfaceMap.colorSpace=T.NoColorSpace;
+  box(0,-.17,.80,22,.30,13,new T.MeshPhysicalMaterial({map:floorTex,bumpMap:surfaceMap,bumpScale:.033,
+    roughness:.94,roughnessMap:surfaceMap,clearcoat:.8,clearcoatRoughness:.36,clearcoatRoughnessMap:surfaceMap,ior:1.46}));
   box(0,.09,-5.65,22,.22,.27,'#55606d');
   for(let i=-10;i<=10;i+=2)box(i,.53,-5.65,.045,.89,.045,'#596878');
   for(const y of [.50,.91])box(0,y,-5.65,22,.037,.048,'#748d9b');
   dressRooftops(city,box,texture,sign,rand);
-  // Two rooftop utility housings anchor the immediate foreground.
-  for(const side of [-1,1]){
-    box(side*5,.45,-2.3,1.36,.9,.95,'#687482');
-    for(let i=0;i<8;i++)box(side*5,.15+i*.084,-1.815,1.05,.036,.024,'#323d51');
-  }
   const glowMap=texture(64,64,ctx=>{
     const g=ctx.createRadialGradient(32,32,0,32,32,32);
     g.addColorStop(0,'rgba(255,255,255,.95)');g.addColorStop(.22,'rgba(255,255,255,.68)');
     g.addColorStop(.5,'rgba(255,255,255,.19)');g.addColorStop(1,'rgba(255,255,255,0)');
     ctx.fillStyle=g;ctx.fillRect(0,0,64,64);
   });
-  // Light scatters through the haze at different depths in the street.
-  for (const [x,y,z,w,h,color] of [
-    [-5,1.5,-8,8,4,0xe77398],[6,2.3,-10,8,4,0x56b5c6],
-    [-2,2,-20,19,6,0xda8e79],[8,4,-30,24,6,0x92a4d2]
-  ]) {
-    const mist=new T.Sprite(new T.SpriteMaterial({map:glowMap,color,opacity:.18,
-      transparent:true,blending:T.AdditiveBlending,depthWrite:false}));
-    mist.position.set(x,y,z);mist.scale.set(w,h,1);scene.add(mist);
-  }
-  const lamp=new T.Mesh(new T.SphereGeometry(.040,24,16),basic({color:0xffe3b4}));
+  const lamp=new T.Mesh(new T.SphereGeometry(.040,24,16),new T.MeshBasicMaterial({color:new T.Color(0xffd3a0).multiplyScalar(5)}));
   lamp.position.set(1.02,1.45,-5.65);scene.add(lamp);
   const hood=new T.Mesh(new T.CylinderGeometry(.042,.087,.052,32),solid('#3e4756'));
   hood.position.copy(lamp.position);hood.position.y+=.042;scene.add(hood);
@@ -221,10 +206,10 @@ async function mount(stage) {
   Object.assign(cityKey.shadow.camera,{left:-12,right:12,top:12,bottom:-12,near:.3,far:38});
   cityKey.shadow.camera.updateProjectionMatrix();cityKey.shadow.normalBias=.024;
   scene.add(hemi.clone(),cityKey,cityKey.target);
-  for(const [x,y,z,color,power] of [[1.35,.9,-13.9,0xff475d,12],[1.02,1.43,-5.65,0xffbf80,9],[-2.8,3,-10.3,0xff5792,18],[3.2,.25,-12.1,0x65efe0,14]]){
+  for(const [x,y,z,color,power] of [[1.35,.9,-13.9,0xff9060,8],[1.02,1.43,-5.65,0xffbf80,9],[-2.8,3,-10.3,0xe79975,10],[3.2,.25,-12.1,0x9ac8dc,9]]){
     const spill=new T.PointLight(color,power,12,2);spill.position.set(x,y,z);scene.add(spill);
   }
-  // Keep repeated window frames, pipes, fans and rails to one draw per material and geometry.
+  // Batch repeated fixtures, pipes and railings by geometry and material.
   const batches=new Map();
   for(const mesh of [...city.children]){
     if(!mesh.isMesh || mesh.material.transparent)continue;
@@ -240,7 +225,7 @@ async function mount(stage) {
     batch.castShadow=first.castShadow;batch.receiveShadow=first.receiveShadow;city.add(batch);
   }
   renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;
-  // The buildings and practicals are fixed, so their shadows and glossy metal probe are baked once.
+  // Capture the skyline and static deck fixtures for glossy metal and glass.
   const water=wetDeck();scene.add(water);
   let environment;
   function bakeEnvironment(){
@@ -257,70 +242,23 @@ async function mount(stage) {
   const operator=await createOperator();
   actorScene.add(operator.root);
   const equip=studioGear(scene,actorScene,operator.wrist);
+  const contact=new T.Mesh(new T.PlaneGeometry(.76,.47),new T.MeshBasicMaterial({
+    map:glowMap,color:0x090b14,transparent:true,opacity:.62,depthWrite:false}));
+  contact.rotation.x=-Math.PI/2;contact.position.y=-.008;contact.renderOrder=3;scene.add(contact);
   // Keep the actor sharp in the main composite and depth-tested in the deck's mirror pass.
   scene.onAfterRender=(activeRenderer,world,view)=>{
     if(view!==water.camera)return;
     const clear=activeRenderer.autoClear;
     activeRenderer.autoClear=false;activeRenderer.render(actorScene,view);activeRenderer.autoClear=clear;
   };
-  const blurred=new T.WebGLRenderTarget(1,1,{depthBuffer:true});
-  const screen=new T.Scene(), ortho=new T.OrthographicCamera(-1,1,1,-1,0,1);
-  const blur=new T.ShaderMaterial({
-    uniforms:{city:{value:blurred.texture},pixel:{value:new T.Vector2()}},
-    vertexShader:'varying vec2 uv0; void main(){uv0=uv;gl_Position=vec4(position.xy,0.,1.);}',
-    fragmentShader:`uniform sampler2D city; uniform vec2 pixel; varying vec2 uv0;
-      void main(){
-        vec3 c=texture2D(city,uv0).rgb*.20;
-        for(int i=0;i<8;i++){
-          float a=float(i)*.785398;
-          c+=texture2D(city,uv0+vec2(cos(a),sin(a))*pixel).rgb*.10;
-        }
-        c=c*vec3(.88,.88,.97)+vec3(.003,.004,.009);
-        gl_FragColor=vec4(c,1.);
-        #include <colorspace_fragment>
-      }`,depthTest:false,depthWrite:false
-  });
-  screen.add(new T.Mesh(new T.PlaneGeometry(2,2),blur));
+  const ortho=new T.OrthographicCamera(-1,1,1,-1,0,1);
   const composite=new T.WebGLRenderTarget(1,1,{
     type:renderer.capabilities.isWebGL2 && renderer.extensions.has('EXT_color_buffer_float') ? T.HalfFloatType : T.UnsignedByteType,
-    samples:renderer.capabilities.isWebGL2 ? Math.min(2,renderer.capabilities.maxSamples) : 0
+    depthTexture:depthAvailable ? new T.DepthTexture(1,1,T.UnsignedShortType) : null
   });
-  const film=new T.ShaderMaterial({
-    uniforms:{frameMap:{value:composite.texture},source:{value:new T.Vector3()},aspect:{value:1},grainFrame:{value:0}},
-    vertexShader:blur.vertexShader,
-    fragmentShader:`uniform sampler2D frameMap;
-      uniform vec3 source;
-      uniform float aspect,grainFrame;
-      varying vec2 uv0;
-      void main(){
-        vec3 c=texture2D(frameMap,uv0).rgb;
-        float fringe=.00058*smoothstep(.24,.72,length(uv0-.5));
-        c.r=mix(c.r,texture2D(frameMap,uv0+vec2(fringe,0.)).r,.48);
-        c.b=mix(c.b,texture2D(frameMap,uv0-vec2(fringe,0.)).b,.48);
-        vec2 delta=(uv0-source.xy)*vec2(aspect,1.);
-        float inside=step(0.,source.z)*(1.-smoothstep(.45,.5,max(abs(source.x-.5),abs(source.y-.5))));
-        // Sample the composited lamp so foreground silhouettes can mask its flare.
-        float visibility=inside*smoothstep(.55,.94,texture2D(frameMap,source.xy).r);
-        float streak=exp(-abs(delta.x)*9.-abs(delta.y)*340.);
-        vec2 ghost=(uv0-(.5+(.5-source.xy)*.62))*vec2(aspect,1.);
-        float iris=1.-smoothstep(.027,.054,length(ghost));
-        c+=visibility*(vec3(.24,.115,.047)*streak+vec3(.012,.036,.042)*iris);
-        float vignette=smoothstep(.18,.78,length(uv0-.5));
-        c*=1.-.23*vignette;
-        c=max(c-vec3(.004,.004,.002),vec3(0.));
-        c=(c*(1.13+.32*c))/(1.+.49*c);
-        gl_FragColor=vec4(c,1.);
-        #include <colorspace_fragment>
-        vec3 hash=fract(vec3(gl_FragCoord.xy,grainFrame)*.1031);
-        hash+=dot(hash,hash.yzx+33.33);
-        float noise=fract((hash.x+hash.y)*hash.z)-.5;
-        float scan=sin(gl_FragCoord.y*1.5708);
-        gl_FragColor.rgb*=.996+.004*scan;
-        gl_FragColor.rgb+=noise*.021;
-      }`,depthTest:false,depthWrite:false
-  });
+  const film=rooftopFilm(composite,camera,lamp.position);
   const finish=new T.Scene();
-  finish.add(new T.Mesh(screen.children[0].geometry,film));
+  finish.add(new T.Mesh(new T.PlaneGeometry(2,2),film));
   const motion=matchMedia('(prefers-reduced-motion: reduce)');
   let paused=motion.matches,frame=0,last=0,time=0,pointer=0,drift=0;
   const pause=stage.querySelector('[data-pause]');
@@ -328,74 +266,97 @@ async function mount(stage) {
     pause.setAttribute('aria-pressed',String(paused));
     pause.textContent=paused?(document.documentElement.lang.startsWith('zh')?'播放動態':'Resume motion'):(document.documentElement.lang.startsWith('zh')?'暫停動態':'Pause motion');
   }
-  let [height,distance,angle]=cameraShot('turn',0), shotStart=0,previousMode='turn';
+  let [height,distance,angle]=cameraShot('turn',0), shotStart=0,previousMode='turn',previousSkill='',previousView='';
   const dialog=stage.querySelector('dialog');
-  let sheetOffset=0, stacked=false;
+  let sheetOffset=0, stacked=false, focusX=0, framing=.39;
+  const grip=new T.Vector3(),face=new T.Vector3(),hips=new T.Vector3();
+  let entryStart=-Infinity,wasInspecting=false,focusZ=0;
+  let upgradeStart=-Infinity,upgradeDirection=1;
   function frameSheet(){
     const bounds=dialog.getBoundingClientRect();
     const h=canvas.clientHeight;
-    sheetOffset=dialog.open && bounds.width>canvas.clientWidth*.85 ? Math.max(0,h*.43-bounds.top*.52) : 0;
+    sheetOffset=dialog.open && bounds.width>canvas.clientWidth*.85 ? Math.min(h*.18,Math.max(0,h*.38-bounds.top*.52)) : 0;
   }
   new ResizeObserver(()=>{frameSheet();if(paused)draw(0);}).observe(dialog);
   function draw(dt){
     const mode=stage.dataset.pose || 'turn';
-    if(mode!==previousMode){previousMode=mode;shotStart=time;}
     const skill=stage.dataset.skill || '';
-    const shot=skill && mode==='turn' ? [1.0,3.75,.055] : cameraShot(mode,time-shotStart);
-    const portrait=stacked;
-    const overlay=stage.hasAttribute('data-open');
-    const damping=dt===0 ? 1 : 1-Math.exp(-dt*1.55);
+    const view=stage.dataset.inspection || (!stage.dataset.open && mode==='turn' && skill ? 'work' : '');
+    const inspecting=stage.dataset.open==='discipline';
+    if(skill!==previousSkill || (inspecting && !wasInspecting)){
+      operator.begin();entryStart=time;
+    }
+    wasInspecting=inspecting;
+    if(mode!==previousMode || skill!==previousSkill || view!==previousView){
+      previousMode=mode;previousSkill=skill;previousView=view;shotStart=time;
+    }
+    const takeTime=paused && view==='technique' ? 3 : time-shotStart;
+    const elapsed=time-entryStart;
+    let shot=cameraShot(mode,takeTime,skill,view);
+    const upgrading=stage.dataset.open==='skills' && !paused;
+    if(upgrading)shot=levelUpShot(shot,time-upgradeStart,upgradeDirection);
+    const portrait=stacked,overlay=stage.hasAttribute('data-open');
+    const damping=dt===0 ? 1 : 1-Math.exp(-dt*3.1);
     drift+=((paused?0:pointer)-drift)*damping;
-    height+=(shot[0]-height)*damping;
-    distance+=(shot[1]+(portrait?.65:0)-distance)*damping;
-    angle+=(shot[2]+drift*.035+.033*Math.sin(time*.12)-angle)*damping;
-    const w=canvas.clientWidth,h=canvas.clientHeight;
-    const fraction=portrait ? (overlay ? .43 : .56) : (overlay ? .28 : .325);
-    camera.setViewOffset(w,h,(.5-fraction)*w,overlay ? sheetOffset : portrait ? -.105*h : 0,w,h);
-    camera.position.set(Math.sin(angle)*distance,height+.14,Math.cos(angle)*distance);
-    camera.lookAt(0,height,0);
-    operator.root.rotation.y=1.91+.025*Math.sin(time*.31);
-    operator.pose(mode,time,dt,skill);
+    operator.pose(time,elapsed,paused);
     equip(skill,time,dt,paused);
+    operator.wrist.getWorldPosition(grip);operator.head.getWorldPosition(face);operator.hips.getWorldPosition(hips);
+    contact.position.x=hips.x;contact.position.z=hips.z;
+    const entering=inspecting && !paused && elapsed<operator.duration;
+    const follow=inspecting ? (entering?.70:.33) : upgrading ? .38 : .12;
+    const handWeight=view==='equipment'?.12:.35;
+    const targetY=shot[0]+follow*((face.y-1.56)*(1-handWeight)+(grip.y-1.08)*handWeight);
+    height+=(targetY-height)*damping;
+    const w=canvas.clientWidth,h=canvas.clientHeight;
+    const equipmentFit=portrait && view==='equipment' ? 1.7*h/(2*w*Math.tan(T.MathUtils.degToRad(camera.fov/2))) : 0;
+    distance+=(Math.max(shot[1]+(portrait?.65:0)+(entering?.26:0),equipmentFit)-distance)*damping;
+    const sweep=entering ? Math.sin(Math.PI*elapsed/operator.duration)*.30 : 0;
+    const handLead=entering ? T.MathUtils.clamp((grip.x-hips.x)*.36,-.16,.16) : 0;
+    angle+=(shot[2]+sweep+handLead+drift*.035+.033*Math.sin(time*.12)-angle)*damping;
+    const fraction=portrait ? (overlay || skill ? .48 : .55) : (inspecting ? .405 : overlay ? .29 : .43);
+    framing+=(fraction-framing)*damping;
+    camera.setViewOffset(w,h,(.5-framing)*w,overlay ? sheetOffset : portrait ? -.105*h : 0,w,h);
+    const anchor=hips;
+    const targetX=anchor.x+(view==='equipment'?.32:view==='technique'?.10:0);
+    focusX+=(T.MathUtils.lerp(targetX,(face.x+grip.x)*.5,follow)-focusX)*damping;
+    focusZ+=(T.MathUtils.lerp(anchor.z,(face.z+grip.z)*.5,follow)-focusZ)*damping;
+    camera.position.set(focusX+Math.sin(angle)*distance,height+.14,focusZ+Math.cos(angle)*distance);
+    camera.lookAt(focusX,height,focusZ);
     renderFilm();
   }
   function renderFilm(){
-    renderer.setRenderTarget(blurred);renderer.render(scene,camera);
-    renderer.setRenderTarget(composite);renderer.render(screen,ortho);
-    renderer.autoClear=false;renderer.clearDepth();renderer.render(actorScene,camera);renderer.autoClear=true;
+    renderer.setRenderTarget(composite);renderer.render(scene,camera);
+    renderer.autoClear=false;renderer.render(actorScene,camera);renderer.autoClear=true;
     const source=film.uniforms.source.value.copy(lamp.position).project(camera);
-    source.set(source.x*.5+.5,source.y*.5+.5,1-Math.abs(source.z));
+    source.set(source.x*.5+.5,source.y*.5+.5,source.z*.5+.5);
     film.uniforms.grainFrame.value=Math.floor(time*18)%4096;
     renderer.setRenderTarget(null);renderer.render(finish,ortho);
   }
   function tick(now){
     const elapsed=last?Math.max(0,(now-last)/1000):0;
-    last=now;time+=elapsed;draw(Math.min(.08,elapsed));
+    last=now;time+=elapsed;draw(Math.min(.35,elapsed));
     if(!paused&&!document.hidden)frame=requestAnimationFrame(tick);
   }
   function schedule(){cancelAnimationFrame(frame);last=0;if(!document.hidden)frame=requestAnimationFrame(tick);}
   function size(){
     const w=canvas.clientWidth,h=canvas.clientHeight;if(!w||!h)return;
     renderer.setPixelRatio(Math.min(devicePixelRatio,1.6,Math.sqrt(2560*1440/(w*h))));renderer.setSize(w,h,false);
-    blurred.setSize(Math.max(1,Math.round(canvas.width*.83)),Math.max(1,Math.round(canvas.height*.83)));
-    water.getRenderTarget().setSize(Math.max(1,Math.round(blurred.width*.45)),Math.max(1,Math.round(blurred.height*.45)));
-    blur.uniforms.pixel.value.set(.85/w,.85/h);
+    water.getRenderTarget().setSize(Math.max(1,Math.round(canvas.width*.38)),Math.max(1,Math.round(canvas.height*.38)));
     composite.setSize(canvas.width,canvas.height);film.uniforms.aspect.value=w/h;
+    film.uniforms.texel.value.set(1/canvas.width,1/canvas.height);
     stacked=getComputedStyle(stage).getPropertyValue('--stacked').trim()==='1';
     frameSheet();camera.aspect=w/h;camera.fov=27;camera.updateProjectionMatrix();draw(0);stage.classList.add('scene-ready');
   }
   new ResizeObserver(size).observe(canvas);
+  stage.addEventListener('skilllevelup',()=>{
+    if(paused)return;
+    upgradeStart=time;upgradeDirection*=-1;
+    operator.begin();entryStart=time;
+  });
+  stage.addEventListener('recordchange',()=>{frameSheet();if(paused)draw(0);});
   stage.addEventListener('pointermove',e=>{pointer=(e.clientX/stage.clientWidth-.5)*2;});
   stage.addEventListener('pointerleave',()=>{pointer=0;});
   stage.addEventListener('posechange',()=>{frameSheet();if(paused)draw(0);});
-  stage.addEventListener('photo',()=>{
-    renderFilm();
-    canvas.toBlob(blob=>{
-      if(!blob)return;
-      const a=document.createElement('a');a.download='mong-kok-rooftop.png';
-      a.href=URL.createObjectURL(blob);a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
-    });
-  });
   pause.addEventListener('click',()=>{paused=!paused;updatePause();schedule();});
   motion.addEventListener('change',()=>{paused=motion.matches;updatePause();schedule();});
   document.addEventListener('visibilitychange',schedule);

@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>Hong Kong Street · Material preview</title>
+  <style>
+    * { box-sizing: border-box }
+    body { margin: 0; background: #18202a; color: #f8f8f6; font: 15px/1.4 system-ui,sans-serif }
+    canvas { display: block; width: 100%; height: 100vh; height: 100dvh }
+    fieldset, #status { position: fixed; left: 50%; transform: translateX(-50%); background: #151c24ef; border: 1px solid #56616c; border-radius: .5rem }
+    fieldset { bottom: max(1rem,env(safe-area-inset-bottom)); display: flex; align-items: center; gap: 1rem; padding: .65rem 1rem; margin: 0; white-space: nowrap }
+    select { font: inherit; color-scheme: dark; padding: .25rem; max-width: 45vw }
+    input { accent-color: #a1d9e5 }
+    #status { top: 40%; text-align: center; padding: .8rem 1rem; min-width: min(90vw,18rem) }
+    @media (max-width: 460px) { fieldset { width: max-content; max-width: calc(100% - 1rem); flex-wrap: wrap; justify-content: center; gap: .45rem .75rem; padding: .5rem } }
+  </style>
+</head>
+<body>
+  <canvas aria-label="Hong Kong street material preview"></canvas>
+  <p id="status" role="status">Loading street geometry and textures…</p>
+  <fieldset aria-label="Preview controls" disabled>
+    <label>View <select id="view"><option>Main street</option><option>Fish shop</option><option>Diner</option><option>Rooftops</option></select></label>
+    <label><input id="wet" type="checkbox" checked> Wet road</label>
+    <label><input id="motion" type="checkbox"> Animate rain</label>
+  </fieldset>
+  <script type="module" src="../../js/hong-kong-street.js"></script>
+</body>
+</html>

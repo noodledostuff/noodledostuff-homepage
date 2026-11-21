@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-20T19:28:54.063609Z",
+  "generatedAt": "2026-11-20T19:57:19.572880Z",
   "title": "NoodleDoStuff rooftop portfolio",
   "extensions": {
     "breakpoints": [
@@ -17,25 +17,25 @@
       {
         "name": "Reduced motion",
         "value": "(prefers-reduced-motion: reduce)",
-        "purpose": "Start the rooftop paused while keeping shot selection available."
+        "purpose": "Show the fully phased-in equipment and keep the camera still."
       }
     ]
   },
   "components": [
     {
-      "name": "Selected camera view",
+      "name": "Discipline shortcut",
       "kind": "button",
-      "description": "The active shot tab in the lower-left HUD.",
-      "html": "<button class=\"ds-camera\" type=\"button\" aria-pressed=\"true\">Turn</button>",
-      "css": ".ds-camera{min-width:44px;min-height:30px;padding:4px 10px;background:#a82259;color:white;border:0;font-weight:700}.ds-camera:focus-visible{outline:3px solid #fff1ad;outline-offset:2px}"
+      "description": "Opens the related record beside the equipped operator.",
+      "html": "<button class=\"ds-discipline\" type=\"button\" aria-haspopup=\"dialog\">Motion capture</button>",
+      "css": ".ds-discipline{color:#f7f7f2;border:1px solid #67798b;background:#192938;font-weight:700;min-height:42px;padding:5px 12px}.ds-discipline:focus-visible{outline:3px solid #fff1ad}"
     }
   ],
   "narrative": {
     "northStar": "Timothy Yu’s portfolio as a playable rooftop lobby.",
-    "overview": "An angled cyan work button and four operation tiles sit opposite the rooftop operator.",
+    "overview": "Snowbreak mission and utility frames open work records and skills over one Mong Kok rooftop. Each level-up orbits the operative and settles back into the lobby.",
     "keyCharacteristics": [
-      "Five production disciplines with character poses and rooftop sets",
-      "Featured case study follows the selected discipline",
+      "Five production disciplines with distinct camera angles and equipment",
+      "Discipline records open directly beside the equipped operator",
       "Connected skill nodes beside the character",
       "Reflective glass towers and wet concrete"
     ]

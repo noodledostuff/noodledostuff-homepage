@@ -25,8 +25,17 @@ export function addGlassDistrict(city, texture, rand) {
     for(let x=0;x<w;x+=8)ctx.fillRect(x,0,1,h);
     for(let y=0;y<h;y+=16)ctx.fillRect(0,y,w,3);
   });
+  const paneFinish=texture(256,512,(ctx,w,h)=>{
+    ctx.fillStyle='#999999';ctx.fillRect(0,0,w,h);
+    for(let y=0;y<h;y+=8)for(let x=0;x<w;x+=8){
+      const finish=66+((x*7+y*13)%49);
+      ctx.fillStyle='rgb('+[finish,finish,finish].join(',')+')';
+      ctx.fillRect(x+1,y+1,7,6);
+    }
+  });
+  paneFinish.colorSpace=T.NoColorSpace;
   const panes=new T.MeshPhysicalMaterial({map:glazing,color:0xaebdca,emissiveMap:lights,emissive:0xe3f2ff,emissiveIntensity:1.08,
-    metalness:.76,roughness:.145,clearcoat:1,clearcoatRoughness:.12,envMapIntensity:1.25});
+    metalness:.18,roughness:.65,roughnessMap:paneFinish,bumpMap:paneFinish,bumpScale:.008,ior:1.52,clearcoat:1,clearcoatRoughness:.065,envMapIntensity:1.42});
   const steel=new T.MeshStandardMaterial({color:0x52667a,metalness:.84,roughness:.24});
   const crown=new T.MeshPhysicalMaterial({color:0x3e7890,emissive:0x326e88,emissiveIntensity:.45,metalness:.67,roughness:.17,clearcoat:1});
   const accent=new T.MeshStandardMaterial({color:0x8de2de,emissive:0x53c9ce,emissiveIntensity:.85,metalness:.45,roughness:.28});
@@ -65,6 +74,22 @@ export function addGlassDistrict(city, texture, rand) {
   neon(1.38,.88,-14.0,2.68,.59,'旺角電器','#ff626e');
   neon(-3.16,.51,-13.4,1.7,.48,'冰室','#65d9cf');
   tower(4.2,-38,7.25,3.15,2.72,-.3,true);
+  // The lower wing and enclosed footbridge connect the tower to the adjacent podium.
+  tower(2.45,-38.3,3.9,1.55,2.36,-.30);
+  const bridge=new T.Group();
+  bridge.position.set(-1.65,-.44,-36.52);
+  bridge.rotation.y=.30;
+  const span=7.75;
+  part(bridge,rect,panes,0,0,0,span,.64,.72);
+  for(const y of [-.34,.34])part(bridge,rect,steel,0,y,0,span+.08,.08,.81);
+  for(let bay=0;bay<11;bay++){
+    const x=(bay-5)*span/11;
+    part(bridge,rect,steel,x,0,.38,.035,.64,.035);
+    part(bridge,rect,steel,x+.16,0,.38,.031,.83,.031).rotation.z=bay%2?.67:-.67;
+  }
+  // Move the truss members into the district's shared static instance batches.
+  bridge.updateMatrixWorld();
+  for(const member of [...bridge.children])city.attach(member);
   for(const [x,z,top,w,d,yaw] of [
     [-6,-35,4.2,2.9,2.3,.2],[-13,-47,8,3.1,3.5,-.3],[.6,-53,4.7,2.7,2.4,.3],
     [9,-47,5.6,3.3,3.1,.14],[13,-35,7.4,2.8,2.1,-.23],[19,-57,9,3.4,3.6,.26],

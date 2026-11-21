@@ -88,26 +88,48 @@ export function studioGear(scene,actorScene,wrist) {
     mesh(live.set,box,i%3?ice:pink,.60+i*.069,.837,-.99+.024*Math.sin(i),.033,.018,.019);
   }
   monitor(live.set,.84,.98,-1.18,.56,.27,'levels');
-  const arrival=new T.Mesh(new T.RingGeometry(.88,1,64),new T.MeshBasicMaterial({color:0x8ce8e0,transparent:true,depthWrite:false,side:T.DoubleSide}));
-  arrival.rotation.x=-Math.PI/2;arrival.position.set(.75,.009,-1.18);scene.add(arrival);arrival.visible=false;
+  // Reveal the full-size meshes, including their reflections, with the same world-space scan.
+  const phase={value:1},surfaces=new Set();
+  for(const {set,held} of Object.values(kits)){
+    for(const group of [set,held])group.traverse(part=>{if(part.material)surfaces.add(part.material);});
+  }
+  for(const material of surfaces){
+    material.onBeforeCompile=shader=>{
+      shader.uniforms.kitPhase=phase;
+      shader.vertexShader='varying vec3 kitWorld;\n'+shader.vertexShader.replace('#include <begin_vertex>',
+        '#include <begin_vertex>\n kitWorld=(modelMatrix*vec4(transformed,1.)).xyz;');
+      shader.fragmentShader='uniform float kitPhase; varying vec3 kitWorld;\n'+shader.fragmentShader.replace('#include <opaque_fragment>',`
+        if(kitPhase<1.){
+          vec3 cell=floor(kitWorld*155.);
+          float noise=fract(sin(dot(cell,vec3(17.1,51.7,9.2)))*4375.1);
+          float reveal=.70*clamp(kitWorld.y/1.95,0.,1.)+.29*noise;
+          if(reveal>=kitPhase)discard;
+          outgoingLight+=vec3(.28,.86,.91)*(1.-smoothstep(0.,.085,kitPhase-reveal));
+        }
+        #include <opaque_fragment>`);
+    };
+  }
   const spill=new T.PointLight(0xffcea1,0,4,2);spill.position.set(.91,1.65,-1.12);scene.add(spill);
-  const keyLight=spill.clone();actorScene.add(keyLight);
+  const keyLight=scene===actorScene ? spill : spill.clone();
+  if(keyLight!==spill)actorScene.add(keyLight);
+  const neutral=wrist.getWorldQuaternion(new T.Quaternion()).invert();
+  const handRotation=new T.Quaternion(),toolRotation=new T.Quaternion().setFromAxisAngle(new T.Vector3(0,1,0),-.34);
   let selected='',age=1;
   return (key,t,dt,still)=>{
     if(key!==selected){
       if(kits[selected])kits[selected].set.visible=kits[selected].held.visible=false;
       selected=key;age=0;
     }
-    const kit=kits[key];arrival.visible=false;keyLight.intensity=spill.intensity=0;
+    const kit=kits[key];keyLight.intensity=spill.intensity=0;
     if(!kit)return;
     age=still?1:Math.min(1,age+dt*1.8);
     const ease=1-Math.pow(1-age,3);
     kit.set.visible=kit.held.visible=true;
-    kit.set.scale.setScalar(.01+.99*ease);kit.held.scale.setScalar(.01+.99*ease);
+    phase.value=age;
     wrist.localToWorld(kit.held.position.set(.018,0,0));
-    kit.held.rotation.set(.04*Math.sin(t*.5),-.34+.09*Math.sin(t*.43),.04*Math.sin(t*.39));
+    actorScene.worldToLocal(kit.held.position);
+    kit.held.quaternion.copy(wrist.getWorldQuaternion(handRotation)).multiply(neutral).multiply(toolRotation);
     orb.rotation.y=t*.25;
-    arrival.visible=age<1;arrival.scale.setScalar(.15+age*.74);arrival.material.opacity=(1-age)*.46;
-    if(key==='cinema')keyLight.intensity=spill.intensity=3.4*ease;
+    if(key==='cinema' && scene.visible)keyLight.intensity=spill.intensity=3.4*ease;
   };
 }
