@@ -39,6 +39,7 @@
 .city-canvas, .rooftop::before {position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none;}
 .city-canvas {opacity: 0; z-index: -3;}
 .scene-ready .city-canvas {opacity: 1;}
+.street-film {position:absolute;inset:0;width:100%;height:100%;z-index:-3;object-fit:cover;object-position:40% center;pointer-events:none;}
 .rooftop::before {content: ""; z-index: -2; background: linear-gradient(0deg, rgb(9 13 31 / .72), transparent 33%, transparent 82%, rgb(10 14 33 / .35));}
 .rooftop :where(button, a, select, input) {font: inherit; color: inherit;}
 .rooftop button {cursor: pointer; border: 0; background: transparent; padding: 0;}
@@ -173,7 +174,7 @@
 }
 .branch-node i {
   display:grid;place-items:center;width:var(--node-size);aspect-ratio:1;border-radius:50%;
-  background:#192c40cc url('../../snowbreak/assets/node.webp') center/cover;border:1px solid #b1c6d2b3;
+  background:radial-gradient(circle,#294959 0 54%,#142737 55% 65%,#557781 66% 68%,#142737 69%);border:1px solid #b1c6d2b3;
 }
 .rooftop .branch-node svg {width:45%;height:45%;}
 .branch-node span {

@@ -206,11 +206,11 @@ function instanceStreet(street) {
   street.traverse(node=>{node.matrixAutoUpdate=false;node.matrixWorldAutoUpdate=false;});
 }
 
-async function mountStreet(canvas, stage) {
+export async function mountStreet(canvas, stage, compact = false) {
   const renderer = new T.WebGLRenderer({ canvas, antialias: false });
   renderer.toneMapping = T.ACESFilmicToneMapping;
   renderer.outputColorSpace = T.SRGBColorSpace;
-  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.enabled = !compact;
   renderer.shadowMap.type = T.PCFSoftShadowMap;
   renderer.shadowMap.autoUpdate = false;
 
@@ -220,9 +220,22 @@ async function mountStreet(canvas, stage) {
   const manager = new T.LoadingManager();
   manager.setURLModifier(url => /\/T_(Showcase_\d+|Diner|Sign_Facade|Advertising_Signboard)_(A|N_GL|ORM|E)\.webp$/.test(url)
     ? url + '?v=portfolio-signs-2' : url);
+  const streetLoader = new GLTFLoader(manager);
+  if (compact) streetLoader.register(parser => ({
+    name: 'MobileStreetMaterials',
+    beforeRoot() {
+      // Keep the shop colours, luminous signs and window masks. Skip detail maps
+      // before the loader schedules their downloads and allocates GPU textures.
+      for (const material of parser.json.materials) {
+        delete material.normalTexture;
+        delete material.occlusionTexture;
+        if (!material.name?.startsWith('MI_Windows_')) delete material.pbrMetallicRoughness?.metallicRoughnessTexture;
+      }
+    }
+  }));
   const [sky, { scene: street }, operator] = await Promise.all([
     nightSky(),
-    new GLTFLoader(manager).loadAsync(new URL('../models/hong-kong-street/Maps/Demo.glb', import.meta.url).href),
+    streetLoader.loadAsync(new URL('../models/hong-kong-street/Maps/Demo.glb', import.meta.url).href),
     stage ? import('./street-operator.js?v=street-studio-2').then(m => m.streetOperator(stage,world)) : null,
   ]);
   sky.position.set(193, 0, -30);
@@ -285,7 +298,7 @@ async function mountStreet(canvas, stage) {
       mat.emissive.set(0xffe8d5);
       mat.emissiveIntensity = 1.7;
     }
-    if (mat.map) mat.map.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+    if (mat.map) mat.map.anisotropy = Math.min(compact ? 2 : 8, renderer.capabilities.getMaxAnisotropy());
   }
 
   // Target individual props so duplicate signs elsewhere keep their original artwork.
@@ -296,7 +309,7 @@ async function mountStreet(canvas, stage) {
   for (const result of billboards) if (result.status === 'rejected') console.warn('Street billboard unavailable', result.reason);
 
   const pmrem = new T.PMREMGenerator(renderer);
-  const captureTarget = new T.WebGLCubeRenderTarget(128, { type: targetType });
+  const captureTarget = new T.WebGLCubeRenderTarget(compact ? 64 : 128, { type: targetType });
   const probe = new T.CubeCamera(.18, 550, captureTarget);
   probe.position.copy(sky.position);
   probe.update(renderer, world);
@@ -307,7 +320,7 @@ async function mountStreet(canvas, stage) {
   const view = document.querySelector('#view'), wet = document.querySelector('#wet');
   const motion = document.querySelector('#motion'), pause = stage?.querySelector('[data-pause]');
   const practicals = world.children.filter(light => light.isSpotLight || light.isPointLight);
-  const weather = streetWeather(renderer, world, camera, sky, practicals, targetType, operator?.scene);
+  const weather = compact ? null : streetWeather(renderer, world, camera, sky, practicals, targetType, operator?.scene);
   instanceStreet(street);
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   let playing = !reduced.matches, lost = false, seconds = 1.7, previousTime = 0, animation = 0;
@@ -319,6 +332,7 @@ async function mountStreet(canvas, stage) {
     r.autoClear = true;
   };
   function capture(reflect=true) {
+    if (compact) return;
     uniforms.roadWet.value = 0;
     uniforms.roadMirror.value = null;
     if (!wet || wet.checked) {
@@ -328,6 +342,13 @@ async function mountStreet(canvas, stage) {
       uniforms.roadWet.value = 1;
     }
     weather.capture();
+  }
+  function drawFrame() {
+    if (weather) return weather.draw(seconds);
+    renderer.render(world,camera);
+    renderer.autoClear = false;
+    renderer.render(operator.scene,camera);
+    renderer.autoClear = true;
   }
   function frameShot() {
     if (operator) return operator.framing(camera, canvas.clientWidth, canvas.clientHeight, !playing);
@@ -340,18 +361,20 @@ async function mountStreet(canvas, stage) {
     queued = 0;
     const w = canvas.clientWidth, h = canvas.clientHeight;
     if (lost || !w || !h) return;
-    const ratio = renderScale*Math.min(devicePixelRatio, 1.5, Math.sqrt(1450000 / (w*h)));
+    const ratio = renderScale*Math.min(devicePixelRatio, compact ? 1 : 1.5, Math.sqrt((compact ? 320000 : 1450000) / (w*h)));
     if (renderer.getPixelRatio() !== ratio) renderer.setPixelRatio(ratio);
     if (canvas.width !== Math.floor(w*ratio) || canvas.height !== Math.floor(h*ratio)) renderer.setSize(w,h,false);
     camera.aspect = w/h;
     const scale = Math.min(.5, 720/Math.max(w,h));
-    mirrorTarget.setSize(Math.max(1,Math.round(w*scale)),Math.max(1,Math.round(h*scale)));
+    if (!compact) mirrorTarget.setSize(Math.max(1,Math.round(w*scale)),Math.max(1,Math.round(h*scale)));
     operator?.pose(seconds,0,!playing);
     frameShot();
     uniforms.roadWet.value = 0;
     uniforms.roadMirror.value = null;
     // All lobby shots share the same crossing and its lighting probe.
-    if (!stage || !localMap) {
+    if (compact) {
+      world.environment = operator.scene.environment = skyMap.texture;
+    } else if (!stage || !localMap) {
       world.environment = skyMap.texture;
       if (stage) probe.position.set(191.6,1.02,-3);
       else probe.position.copy(camera.position);
@@ -361,12 +384,18 @@ async function mountStreet(canvas, stage) {
       if (operator) operator.scene.environment = localMap.texture;
     }
     capture();
-    weather.draw(seconds);
+    drawFrame();
   }
   function queueView() {
     if (!queued) queued = requestAnimationFrame(drawView);
   }
+  let lastDraw=0;
   function animate(now) {
+    if(compact && now-lastDraw < 1000/30-.5){
+      animation=requestAnimationFrame(animate);
+      return;
+    }
+    lastDraw=now;
     const elapsed = (now-previousTime)/1000;
     previousTime=now;
     // Bound the step after a shader compile or stalled frame.
@@ -379,8 +408,8 @@ async function mountStreet(canvas, stage) {
       capture(reflect);
       if(reflect)lastMirror=now;
     }
-    weather.draw(seconds);
-    slowFrames=elapsed>.038 ? slowFrames+1 : Math.max(0,slowFrames-1);
+    drawFrame();
+    slowFrames=elapsed>(compact ? .055 : .038) ? slowFrames+1 : Math.max(0,slowFrames-1);
     if(slowFrames>=20 && renderScale>.5){
       renderScale=Math.max(.5,renderScale-.15);slowFrames=0;queueView();
     }
@@ -410,7 +439,7 @@ async function mountStreet(canvas, stage) {
   document.addEventListener('visibilitychange', updatePlayback);
   for (const event of ['recordchange','posechange','skilllevelup']) stage?.addEventListener(event,queueView);
   view?.addEventListener('change',queueView);
-  wet?.addEventListener('change',() => { if (!lost) { capture(); weather.draw(seconds); } });
+  wet?.addEventListener('change',() => { if (!lost) { capture(); drawFrame(); } });
   window.addEventListener('resize',queueView);
   canvas.addEventListener('webglcontextlost',event => {
     event.preventDefault(); lost = true; stage?.classList.remove('scene-ready'); updatePlayback();
@@ -424,7 +453,7 @@ async function mountStreet(canvas, stage) {
     world.add(street);
     localMap?.dispose();
     localMap = null;
-    weather.restore();
+    weather?.restore();
     renderer.shadowMap.needsUpdate = true;
     drawView(); stage?.classList.add('scene-ready'); updatePlayback();
   });
@@ -436,11 +465,3 @@ async function mountStreet(canvas, stage) {
     document.querySelector('#status').hidden = true;
   }
 }
-
-const stage = document.querySelector('.rooftop');
-const canvas = stage ? stage.querySelector('.city-canvas') : document.querySelector('canvas');
-mountStreet(canvas,stage).catch(error => {
-  console.warn('Main street scene unavailable',error);
-  const status = document.querySelector('#status');
-  if (status) status.textContent = 'Street preview unavailable. Check WebGL support and serve the asset folder over HTTP.';
-});

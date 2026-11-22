@@ -3,7 +3,7 @@
   if (!stage) return;
   const zh=document.documentElement.lang.startsWith('zh'), tr=(en,tc)=>zh?tc:en;
   const entry=stage.dataset.entry, dialog=stage.querySelector('dialog'), body=dialog.querySelector('.panel-body');
-  const pause=stage.querySelector('[data-pause]'), focusReturn=stage.querySelector('.work-index');
+  const sceneControls=stage.querySelector('[data-scene-controls]'), focusReturn=stage.querySelector('.work-index');
   const asset=new URL('../',document.currentScript.src);
   const files={missions:'work.html',story:'about.html',skills:'skillset.html',contact:'contact.html',lobby:'index.html'};
   const panels={
@@ -291,7 +291,7 @@
     dialog.querySelector('.skill-map').hidden=true;
     stage.toggleAttribute('data-tree',key==='skills' && record!=='catalogue');
     dialog.dispatchEvent(new Event('panelchange'));
-    if(pause.parentNode!==stage){pause.hidden=true;stage.append(pause);}
+    if(sceneControls.parentNode!==stage){sceneControls.hidden=true;stage.append(sceneControls);}
     stage.querySelectorAll('[data-kit]').forEach(b=>b.setAttribute('aria-expanded',String(key==='discipline' && b.dataset.kit===record)));
     if(key==='lobby'){
       if(dialog.open)dialog.close();
@@ -390,15 +390,14 @@
           for(const section of records(source))showRecord(section);
           if(key==='story'){
             actions.append(action(tr('Creative practice','創作實務'),()=>navigate('news')),
-              link(tr('Snowbreak 1.8 lobby study','Snowbreak 1.8 大廳習作'),new URL('../snowbreak/',asset).href),
               action(tr('Contact & downloads','聯絡及下載'),()=>navigate('contact')));
             body.append(actions);
           }
         }
       } else {
-        pause.hidden=false;body.append(pause);
+        sceneControls.hidden=false;body.append(sceneControls);
         const locale=zh?'../':'zh-hk/';
-        body.append(link(zh?'English':'繁體中文',locale+(files[entry]||'index.html')+'#settings'));
+        body.append(link(zh?'English':'繁體中文',locale+(files[entry]||'index.html')+location.search+'#settings'));
       }
     }catch(error){
       if(id!==revision)return;

@@ -50,6 +50,9 @@
       </nav>
       <div class="panel-body"></div>
     </dialog>
-    <button type="button" data-pause hidden disabled aria-pressed="false">${tr('Still view','靜態畫面')}</button>
+    <div data-scene-controls hidden>
+      <button type="button" data-pause disabled aria-pressed="false">${tr('Still view','靜態畫面')}</button>
+      <button type="button" data-switch-scene hidden></button>
+    </div>
   `;
 })();

@@ -11,15 +11,11 @@ Static bilingual personal website for YU Kwan Yin Timothy.
 
 The site is designed for GitHub Pages and uses relative URLs so it can be served from a project repository path.
 
-## Snowbreak 1.8 UI reconstruction
-
-Open [the Snowbreak lobby](snowbreak/) on the local static server, or use **Creator profile → Snowbreak 1.8 lobby study** in the portfolio. **Operatives** opens Lyfe’s level-up screen. Select Combat Records to preview the cost and stat changes, then confirm. **Neuronics** shows six selectable skill clusters. The preview uses a sample inventory and resets on reload.
-
 ## Main street lobby
 
 Serve the checkout with `python -m http.server 8000` and open `http://localhost:8000/`. The homepage is a single-screen game lobby. Selected work opens the screen credits and production case studies. The other lobby commands lead to the skill tree and contact details with downloads. The creator badge opens the profile. Their existing English and Traditional Chinese URLs remain valid.
 
-The opening camera follows a 72-second orbit, drifting through six compositions and accelerating between them. Framing is automatic. The eye hides the HUD and Settings controls motion and language. Reduced motion starts paused. Local stills cover camera and discipline states while the renderer loads or when WebGL is unavailable.
+The opening camera follows a 72-second orbit, drifting through six compositions and accelerating between them. Framing is automatic. The eye hides the HUD and Settings controls motion and language. Phones and tablets open with a muted film of the crossing. Project and equipment views use the corresponding scene stills. Reduced motion and data saving start with stills. Settings lets visitors pause motion or switch between the lightweight and live 3D views.
 
 Selecting a discipline opens a work panel at the same street crossing. Work, Technique and Equipment reframe the live performer and equipment. Compact portrait layouts use a bottom sheet. The skill tree places six discipline nodes around the performer at the crossing. Its translucent inspector contains the tool types and all 54 tools. In portrait it moves below the character. Level up advances the selected tool’s lobby level for this visit and plays a close camera orbit.
 

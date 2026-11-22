@@ -25,6 +25,11 @@
     <label><input id="wet" type="checkbox" checked> Wet road</label>
     <label><input id="motion" type="checkbox"> Animate rain</label>
   </fieldset>
-  <script type="module" src="../../js/hong-kong-street.js?v=portfolio-signs-2"></script>
+  <script type="module">
+    import {mountStreet} from '../../js/hong-kong-street.js?v=mobile-1';
+    mountStreet(document.querySelector('canvas')).catch(() => {
+      document.querySelector('#status').textContent = 'Street preview unavailable. Check WebGL support and serve this folder over HTTP.';
+    });
+  </script>
 </body>
 </html>

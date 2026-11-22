@@ -18,7 +18,7 @@ typography:
 
 Five discipline shortcuts frame the operator at a rain-soaked crossing among Mong Kok storefronts. Selecting one opens the operator’s dossier on the right. The lobby keeps its left-hand discipline shortcuts beside the work panel. Compact screens use a readable dialog.
 
-Snowbreak’s main menu and operative screen guide the composition. The character sits just left of centre. Selected work anchors a vertical command group on the right, followed by the skill tree and contact details with downloads. On compact portrait screens the commands move below the character.
+The character sits just left of centre. Selected work anchors a vertical command group on the right, followed by the skill tree and contact details with downloads. On compact portrait screens the commands move below the character.
 
 ## Color and motion
 

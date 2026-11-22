@@ -7,11 +7,16 @@ const {chromium}=require(process.env.PLAYWRIGHT_CORE_PATH || 'playwright-core');
 const base=process.argv[2] || 'http://127.0.0.1:8000/';
 const browser=await chromium.launch({channel:'chrome',args:['--use-angle=swiftshader','--enable-unsafe-swiftshader']});
 try {
-  const page=await browser.newPage({reducedMotion:'reduce'});
   for(const [width,height] of [[1000,640],[390,844]]){
-    await page.setViewportSize({width,height});
+    const page=await browser.newPage({reducedMotion:'reduce',viewport:{width,height},hasTouch:width===390});
     await page.goto(new URL('#skills',base).href,{waitUntil:'domcontentloaded'});
-    await page.locator('.scene-ready[data-tree]').waitFor({timeout:120000});
+    if(width===1000)await page.locator('.scene-ready[data-tree]').waitFor({timeout:120000});
+    else{
+      await page.locator('.branch-node').first().waitFor();
+      const heavy=await page.evaluate(()=>performance.getEntriesByType('resource')
+        .filter(e=>/\.glb|three\.module|mobile-orbit\.mp4|hong-kong-street/.test(e.name)).map(e=>e.name));
+      assert.deepEqual(heavy,[],'A reduced-motion phone should only need the still view');
+    }
     if(width===1000){
       const continuous=await page.evaluate(async()=>{
         const {streetOperator}=await import('./assets/js/street-operator.js');
@@ -125,7 +130,26 @@ try {
     await page.locator('.rail [data-kit="cinema"]').click();
     await page.locator('.discipline-skills').click();
     await page.locator('[data-branch="media"][aria-pressed="true"]').waitFor();
+    await page.close();
   }
+  // Touch-first landscape tablets also use the lightweight entry point.
+  const mobile=await browser.newPage({hasTouch:true,viewport:{width:900,height:450},reducedMotion:'no-preference'});
+  const requests=[];
+  mobile.on('request',req=>requests.push(req.url()));
+  await mobile.goto(base,{waitUntil:'domcontentloaded'});
+  await mobile.waitForFunction(()=>document.querySelector('video')?.currentTime>.1);
+  await mobile.locator('.work-index').click();
+  assert.equal(await mobile.locator('video').evaluate(v=>v.paused),true);
+  assert.ok(!requests.some(u=>/\.glb|three\.module|hong-kong-street/.test(u)));
+  await mobile.locator('.close').click();
+  await mobile.locator('[data-panel="settings"]').click();
+  await mobile.locator('[data-switch-scene]').click();
+  await mobile.locator('.scene-ready').waitFor({timeout:120000});
+  assert.ok(requests.some(u=>u.includes('portrait-operator.glb')));
+  await mobile.locator('[data-switch-scene]').click();
+  await mobile.waitForURL(url=>url.searchParams.get('scene')==='light');
+  assert.equal(await mobile.locator('.scene-ready').count(),0);
+
 } finally {
   await browser.close();
 }
