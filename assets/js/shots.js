@@ -14,6 +14,32 @@ const opening = [
   [120, 1.105, 3.28, .06]
 ];
 const views = {lean:[1.25,2.40,-.26], gaze:[1.37,1.97,.21], rear:[1.20,2.85,-1.65]};
+
+// Aim height, distance, azimuth, elevation and vertical field of view at the crossing.
+const lobbyAngles = [
+  [1.06,2.52,-.05,-.02,56],
+  [1.22,2.30,.62,.10,47],
+  [.91,3.35,2.48,Math.PI/4,49],
+  [1.29,2.22,.80,-.09,43],
+  [1.04,3.15,-.68,.25,51],
+  [1.28,2.32,-.32,.04,44]
+];
+const secondsPerAngle = 12;
+export const lobbyDuration = lobbyAngles.length*secondsPerAngle;
+export function lobbyAngle(seconds) {
+  const beat = seconds / secondsPerAngle;
+  const index = Math.floor(beat) % lobbyAngles.length;
+  const from = lobbyAngles[index], to = lobbyAngles[(index+1)%lobbyAngles.length];
+  const previous = lobbyAngles[(index+lobbyAngles.length-1)%lobbyAngles.length], after = lobbyAngles[(index+2)%lobbyAngles.length];
+  const phase = beat%1;
+  // Slow through each composition, accelerate between marks. The cyclic tangents
+  // keep both position and velocity continuous across the last-to-first seam.
+  const t = phase - .78*Math.sin(2*Math.PI*phase)/(2*Math.PI);
+  return from.map((a,i)=>{
+    const b=to[i], m=(b-previous[i])*.5, n=(after[i]-a)*.5;
+    return a+t*(m+t*(3*(b-a)-2*m-n+t*(2*(a-b)+m+n)));
+  });
+}
 // The overview, hand detail and set view all orbit the same performer.
 const disciplines={
   cinema:{work:[.91,4.12,.21],technique:[1.34,2.05,.47],equipment:[.92,4.15,-.47]},

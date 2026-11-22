@@ -12,14 +12,89 @@ try {
     await page.setViewportSize({width,height});
     await page.goto(new URL('#skills',base).href,{waitUntil:'domcontentloaded'});
     await page.locator('.scene-ready[data-tree]').waitFor({timeout:120000});
+    if(width===1000){
+      const continuous=await page.evaluate(async()=>{
+        const {streetOperator}=await import('./assets/js/street-operator.js');
+        const {PerspectiveCamera,Vector3}=await import('./assets/vendor/three/three.module.min.js');
+        const stage=document.createElement('div'),rig=await streetOperator(stage);
+        const camera=new PerspectiveCamera(56,1.6,.1,550);
+        function sample(t,panel){
+          if(panel)stage.dataset.open=panel;else delete stage.dataset.open;
+          rig.pose(t,0,false);rig.framing(camera,1000,640,false);
+          return camera.position.clone();
+        }
+        const head=rig.scene.getObjectByName('mixamorigHead'),hips=rig.scene.getObjectByName('mixamorigHips');
+        const wrist=rig.scene.getObjectByName('mixamorigRightHand');
+        const world=bone=>bone.getWorldPosition(new Vector3());
+        const lobby=sample(0),handStart=world(wrist),start=sample(1,'missions'),moving=sample(1.7,'missions');
+        const headAboveHips=world(head).y-world(hips).y;
+        if(headAboveHips<.45 || headAboveHips>.75 || handStart.distanceTo(world(wrist))<.03)return false;
+        const interrupted=sample(1.7,'skills'),tree=sample(3.3,'skills');
+        sample(6,'missions');
+        const overhead=sample(8,'missions');
+        return lobby.distanceTo(start)<1e-6 && moving.distanceTo(start)>.1 &&
+          interrupted.distanceTo(moving)<1e-6 && tree.distanceTo(moving)>.1 && overhead.y>3;
+      });
+      assert.ok(continuous,'An interrupted orbit must start at the displayed camera position');
+    }
+    if(width===1000){
+      const drift=await page.evaluate(async()=>{
+        const {createOperator}=await import('./assets/js/operator.js?v=street-studio-2');
+        const {Vector3}=await import('./assets/vendor/three/three.module.min.js');
+        const actor=await createOperator();
+        const feet=['Left','Right'].map(side=>actor.root.getObjectByName('mixamorig'+side+'Foot'));
+        const anchors=feet.map(foot=>foot.getWorldPosition(new Vector3()));
+        let furthest=0;
+        const point=new Vector3();
+        for(const presenting of [true,false]){
+          actor.begin(presenting);
+          for(const t of [0,.08,.16,.65,actor.duration-.17,actor.duration-.10,actor.duration+.2]){
+            actor.pose(t,t,false);
+            feet.forEach((foot,i)=>{furthest=Math.max(furthest,foot.getWorldPosition(point).distanceTo(anchors[i]));});
+          }
+        }
+        return furthest;
+      });
+      assert.ok(drift<.002,'The planted ankles should hold through interrupted gestures and the return to listening');
+    }
+    if(width===1000){
+      const performances=await page.evaluate(async()=>{
+        const {createOperator}=await import('./assets/js/operator.js?v=street-studio-2');
+        const {Vector3}=await import('./assets/vendor/three/three.module.min.js');
+        const actor=await createOperator(),rows=[];
+        let skin;actor.root.traverse(n=>{if(n.morphTargetDictionary?.jawOpen!==undefined)skin=n;});
+        for(const key of ['cinema','edit','model','mocap','live']){
+          actor.begin(key);const duration=actor.duration,prop=actor.root.getObjectByName('Kit_'+key);
+          let maximumJaw=0,blink=0,look=0,travel=0,start;
+          for(let i=0;i<=60;i++){
+            const t=duration*i/60;
+            actor.pose(t,t,false);
+            const position=prop.getWorldPosition(new Vector3());
+            if(i===1)start=position.clone();
+            if(start)travel=Math.max(travel,position.distanceTo(start));
+            const weight=name=>skin.morphTargetInfluences[skin.morphTargetDictionary[name]];
+            maximumJaw=Math.max(maximumJaw,weight('jawOpen'));blink=Math.max(blink,weight('eyeBlinkLeft'));
+            look=Math.max(look,weight('eyeLookDownLeft'),weight('eyeLookOutLeft'));
+          }
+          actor.pose(20,0,true);
+          rows.push({key,blink,look,travel,maximumJaw,scale:prop.scale.x});
+        }
+        return rows;
+      });
+      for(const row of performances){
+        assert.ok(row.travel>.025&&row.blink>.45&&row.look>.05,row.key);
+        assert.equal(row.scale,1,row.key+' paused hold');
+      }
+      assert.ok(performances.find(r=>r.key==='live').maximumJaw>.16);
+    }
     assert.equal(await page.locator('.branch-node').count(),6);
     const frame=await page.screenshot();
-    // A poisoned light probe leaves a working HUD over a nearly black performer.
+    // Sample the lit face between the skill nodes, above the black shirt.
     const lit=await page.evaluate(async data=>{
       const image=await createImageBitmap(await (await fetch('data:image/png;base64,'+data)).blob());
       const ctx=document.createElement('canvas').getContext('2d');
       const portrait=innerHeight>innerWidth;
-      const x=(portrait ? .5 : .33)*image.width,y=(portrait ? .25 : .46)*image.height;
+      const x=(portrait ? .535 : .341)*image.width,y=(portrait ? .176 : .322)*image.height;
       ctx.drawImage(image,x-20,y-20,40,40,0,0,40,40);
       const pixels=ctx.getImageData(0,0,40,40).data;
       let count=0;
@@ -28,10 +103,24 @@ try {
     },frame.toString('base64'));
     assert.ok(lit>160,'Street performer must be visible in the open center of the skill map');
     await page.locator('[data-branch="capture"]').click();
+    const types=page.locator('.type-node');
+    assert.ok(await types.count()>0);
+    await types.last().click();
+    assert.equal(await types.last().getAttribute('aria-pressed'),'true');
+    await page.locator('.tree-root').click();
+    await page.locator('[data-branch="capture"][aria-pressed="true"]').waitFor();
     await page.locator('.tree-leaves button').first().click();
     const rank=await page.locator('.skill-level').textContent();
     await page.locator('.level-up').click();
     assert.notEqual(await page.locator('.skill-level').textContent(),rank);
+    await page.locator('.close').click();
+    await page.locator('.work-index').click();
+    const project=page.locator('.project-feature').first();
+    await project.waitFor();assert.equal(await page.locator('.project-feature').count(),4);
+    await project.click();await page.locator('.panel-body #project-parallel-phantasia').waitFor();
+    await page.locator('.tool-index').click();
+    await page.locator('.panel-body a[href^="mailto:"]').first().waitFor();
+    assert.equal(await page.locator('.panel-body a[href$=".pdf"]').count(),2);
     await page.locator('.close').click();
     await page.locator('.rail [data-kit="cinema"]').click();
     await page.locator('.discipline-skills').click();

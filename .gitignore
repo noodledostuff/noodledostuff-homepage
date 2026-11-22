@@ -1,4 +1,6 @@
 _resources/
+/_3dAssets/
+/instagram-content/
 .DS_Store
 Thumbs.db
 *.log

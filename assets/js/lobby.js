@@ -8,7 +8,7 @@
   const files={missions:'work.html',story:'about.html',skills:'skillset.html',contact:'contact.html',lobby:'index.html'};
   const panels={
     missions:tr('Selected work','作品集'), skills:tr('Skill tree','技能樹'),
-    story:tr('Profile','個人簡介'), contact:tr('Contact','聯絡'),
+    story:tr('Profile','個人簡介'), contact:tr('Contact & downloads','聯絡及下載'),
     archive:tr('Downloads & links','下載及連結'), discipline:tr('Discipline','製作範疇'),
     news:tr('Creative practice','創作實務'), settings:tr('Settings','設定')
   };
@@ -17,6 +17,18 @@
   const panelShots={missions:'lean',story:'gaze',contact:'gaze',archive:'rear',news:'turn'};
   const pages=new Map([[entry,Promise.resolve(document.querySelector('#record-source').content)]]);
   let revision=0, lastControl=focusReturn, current='';
+  const reduced=matchMedia('(prefers-reduced-motion:reduce)');
+  let panelAnimation;
+  function animatePanel(enter){
+    panelAnimation?.cancel();
+    if(reduced.matches || stage.hasAttribute('data-motion-paused'))return;
+    const folded={opacity:0,translate:wide.matches?'8px 0':'0 6px'};
+    const visible={opacity:1,translate:'0 0'};
+    panelAnimation=dialog.animate(enter?[folded,visible]:[visible,folded],{
+      duration:enter?200:100,easing:enter?'cubic-bezier(.16,1,.3,1)':'ease-in',fill:'backwards'
+    });
+    return panelAnimation.finished.catch(()=>{});
+  }
   function dataFor(key) {
     if (!pages.has(key)) {
       const task=fetch(files[key]).then(response=>{
@@ -50,7 +62,7 @@
   const notes={
     cinema:[['Camera and lighting','攝影及燈光'],['Lens choice, framing and key-light placement on set.','現場鏡頭選擇、構圖與主燈位置。'],['Cinema camera · two LED panels on stands','電影攝影機 · 兩組腳架式 LED 燈']],
     edit:[['Picture review','畫面檢視'],['Check the shot on the handheld display against the edit timeline.','對照剪接時間軸，在手提顯示器上檢視鏡頭。'],['Review tablet · timeline monitor','預覽平板 · 時間軸顯示器']],
-    model:[['Surface inspection','表面檢視'],['Inspect the silhouette, topology and surface response under a moving light.','在移動光源下檢視輪廓、拓撲與表面質感。'],['Stylus · wireframe display pedestal','觸控筆 · 線框模型展示台']],
+    model:[['Surface inspection','表面檢視'],['Inspect the impeller blades and their highlights as the turntable rotates.','轉台旋轉時，觀察葉輪的輪廓和金屬反光。'],['Stylus · drawing slate · machined impeller on turntable','觸控筆 · 繪圖板 · 轉台及金屬葉輪']],
     mocap:[['Marker tracking','標記追蹤'],['Sweep the marker cluster through the capture volume within sight of both sensors.','在兩台感應器的視野內移動標記組，檢視捕捉範圍。'],['Hand marker cluster · paired tracking sensors','手持標記組 · 雙追蹤感應器']],
     live:[['Show calling','現場調度'],['Raise the radio to call a cue, then check the levels at the console.','舉起對講機發出提示，再查看控制台上的訊號電平。'],['Production radio · mixing desk and level display','製作對講機 · 混音台及電平顯示器']]
   };
@@ -60,7 +72,7 @@
     stage.dataset.inspection=view;
     const [title,technique,equipment]=notes[stage.dataset.skill];
     const work=view==='work';
-    stage.style.setProperty('--inspection-poster','url("'+new URL('media/main-street/'+stage.dataset.skill+'-'+view+'.webp',asset).href+'")');
+    stage.style.setProperty('--inspection-poster','url("'+new URL('media/main-street/'+stage.dataset.skill+'-'+view+'.webp?v=street-studio-2',asset).href+'")');
     for(const child of body.children)child.hidden=child===note ? work : !work;
     note.replaceChildren(el('h3',view==='equipment'?tr('Production kit','製作器材'):tr(...title)),
       el('p',tr(...(view==='equipment'?equipment:technique))));
@@ -108,16 +120,28 @@
     return [...source.querySelectorAll('section.section[aria-labelledby]')].filter(s=>s.querySelector('h2')&&!s.querySelector('#work-index-title'));
   }
   function showWorkList(source){
+    const all=records(source);
+    const credits=all.find(s=>s.getAttribute('aria-labelledby')==='credits-title');
+    if(credits){
+      body.append(el('h3',tr('Music videos','音樂錄像'),'list-title'));
+      const gallery=el('div',null,'screen-credits');
+      for(const project of credits.querySelectorAll('[data-project]')){
+        const feature=link('',files.missions+'#'+project.id);feature.className='project-feature';
+        const photo=project.querySelector('img').cloneNode();
+        photo.alt='';photo.sizes='(max-width: 600px) 45vw, 240px';
+        feature.append(photo,el('strong',project.dataset.project));gallery.append(feature);
+      }
+      body.append(gallery);
+    }
+    body.append(el('h3',tr('Production case studies','製作案例'),'list-title'));
     const list=el('div',null,'record-list project-list');
-    records(source).forEach(section=>{
+    all.filter(section=>section!==credits).forEach(section=>{
       const heading=section.querySelector('h2');
-      const button=action(heading.textContent,()=>navigate('missions',heading.id));
+      const button=link(heading.textContent,files.missions+'#'+heading.id);
       const original=section.querySelector('img');
       if(original){
-        const preview=el('img');
-        preview.src=original.getAttribute('src');
-        preview.alt='';
-        preview.loading='lazy';
+        const preview=original.cloneNode();
+        preview.sizes='96px';preview.alt='';preview.loading='lazy';
         button.prepend(preview);
       }
       list.append(button);
@@ -140,9 +164,24 @@
     const types={Software:'軟件',Hardware:'硬件',Workflow:'流程',Infrastructure:'基建',Craft:'製作工藝',AI:'AI'};
     const initial={cinema:'media',edit:'media',model:'vp',mocap:'capture',live:'events'};
     const map=dialog.querySelector('.skill-map');
-    map.hidden=false;
+    map.hidden=false;map.classList.remove('expanded','collapsed');
     map.innerHTML='<svg class="branch-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>';
     const lines=map.firstElementChild;
+    const root=action(null,()=>{
+      if(!map.classList.contains('expanded')){
+        const collapsed=map.classList.toggle('collapsed');
+        root.setAttribute('aria-expanded',String(!collapsed));
+        return;
+      }
+      for(const child of map.querySelectorAll('.type-node, .type-edge'))child.remove();
+      map.classList.remove('expanded');root.removeAttribute('aria-label');
+      root.setAttribute('aria-expanded','true');root.lastChild.textContent=tr('Practice','創作實務');
+      map.querySelector('.branch-node[aria-pressed=true]')?.focus();
+    },'tree-root');
+    root.title=tr('Show or hide branches','顯示或隱藏分支');
+    root.setAttribute('aria-expanded','true');
+    root.innerHTML=`<svg aria-hidden="true"><use href="${asset}lobby-icons.svg#tree"></use></svg>`;
+    root.append(el('span',tr('Practice','創作實務')));map.append(root);
     body.innerHTML='<h3 class="branch-name"></h3><nav class="tree-types"></nav><div class="tree-leaves"></div><div class="node-detail" aria-live="polite"><img alt=""><div><strong></strong><p></p></div></div>';
     const groups=body.querySelector('.tree-types'), leaves=body.querySelector('.tree-leaves');
     const detail=body.querySelector('.node-detail'), rank=el('output',null,'skill-level');
@@ -155,7 +194,7 @@
     },'level-up');
     const controls=el('div',null,'level-controls');controls.append(rank,upgrade);body.append(controls);
     function select(button){
-      for(const peer of button.parentElement.querySelectorAll(':scope > button'))
+      for(const peer of button.parentElement.querySelectorAll(button.classList.contains('branch-node')?'.branch-node':':scope > button'))
         peer.setAttribute('aria-pressed',String(peer===button));
     }
     function showTools(members){
@@ -172,12 +211,33 @@
       }
       leaves.firstElementChild?.click();
     }
-    for(const filter of filters){
+    function expand(){
+      map.classList.add('expanded');root.removeAttribute('aria-expanded');
+      root.lastChild.textContent=tr('‹ All branches','‹ 全部分支');
+      root.setAttribute('aria-label',root.lastChild.textContent);
+      const members=[...groups.children];
+      members.forEach((group,i)=>{
+        const x=i%2===0?19:81, rows=Math.ceil(members.length/2);
+        const y=rows===1?50:20+60*Math.floor(i/2)/(rows-1);
+        const edge=document.createElementNS(lines.namespaceURI,'path');
+        edge.setAttribute('d',`M 50 54 Q 50 ${y} ${x} ${y}`);edge.setAttribute('pathLength','1');
+        edge.classList.add('type-edge');edge.classList.toggle('active',group.getAttribute('aria-pressed')==='true');
+        edge.style.setProperty('--grow-delay',i*26+'ms');lines.append(edge);
+        const node=action(group.textContent,()=>{group.click();},'type-node');
+        node.setAttribute('aria-pressed',group.getAttribute('aria-pressed'));
+        node.style.left=x+'%';node.style.top=y+'%';node.style.setProperty('--grow-delay',i*26+'ms');map.append(node);
+      });
+      root.focus({preventScroll:true});
+    }
+    let initializing=true;
+    for(const [index,filter] of filters.entries()){
       const branch=filter.dataset.skillFilter,label=filter.textContent.trim();
       const [symbol,x,y]=branches[branch];
       const line=document.createElementNS(lines.namespaceURI,'path');
       const side=x<50?-1:1;
-      line.setAttribute('d',`M ${50+side*12} ${50+(y-50)*.37} L ${50+side*22} ${y} H ${x}`);
+      line.style.setProperty('--grow-delay',index*26+'ms');
+      line.setAttribute('pathLength','1');
+      line.setAttribute('d',`M 50 54 H ${50+side*9} L ${50+side*22} ${y} H ${x}`);
       lines.append(line);
       const button=action(null,()=>{
         select(button);
@@ -192,17 +252,26 @@
           byType.get(type).push(card);
         }
         for(const [type,members] of byType){
-          const group=action(zh?types[type]:type,()=>{select(group);showTools(members);});
+          const group=action(zh?types[type]:type,()=>{
+            select(group);showTools(members);
+            const typeEdges=lines.querySelectorAll('.type-edge');
+            map.querySelectorAll('.type-node').forEach((peer,i)=>{
+              const chosen=peer.textContent===group.textContent;
+              peer.setAttribute('aria-pressed',String(chosen));typeEdges[i].classList.toggle('active',chosen);
+            });
+          });
           groups.append(group);
         }
         groups.firstElementChild?.click();
         body.scrollTop=0;
+        if(!initializing)expand();
       },'branch-node');
-      button.dataset.branch=branch;button.style.left=x+'%';button.style.top=y+'%';
+      button.dataset.branch=branch;button.style.setProperty('--grow-delay',index*26+'ms');button.style.left=x+'%';button.style.top=y+'%';
       button.innerHTML=`<i><svg aria-hidden="true"><use href="${asset}lobby-icons.svg#${symbol}"></use></svg></i>`;
       button.append(el('span',label));map.append(button);
     }
     map.querySelector('[data-branch="'+(initial[stage.dataset.skill]||'vp')+'"]').click();
+    initializing=false;
   }
   async function renderRoute() {
     const id=++revision;
@@ -213,6 +282,11 @@
     if(raw==='event')record='vp-title';
     else if(raw && !Object.hasOwn(panels,raw) && !Object.hasOwn(destinations,raw) && entry==='missions')record=raw;
     const nextView=key==='discipline' && current==='discipline' ? stage.dataset.inspection : 'work';
+    if(dialog.open && key==='lobby'){
+      const exit=animatePanel(false);
+      if(exit)await exit;
+      if(id!==revision)return;
+    }
     inspector.hidden=true;delete stage.dataset.inspection;
     dialog.querySelector('.skill-map').hidden=true;
     stage.toggleAttribute('data-tree',key==='skills' && record!=='catalogue');
@@ -230,13 +304,15 @@
     if(key==='missions')picker.value='';
     if(kit){
       stage.dataset.skill=kit.dataset.kit;picker.value=kit.dataset.kit;
-      stage.style.setProperty('--kit-poster','url("'+new URL('media/main-street/'+kit.dataset.kit+'.webp',asset).href+'")');
+      stage.style.setProperty('--kit-poster','url("'+new URL('media/main-street/'+kit.dataset.kit+'.webp?v=street-studio-2',asset).href+'")');
       stage.querySelectorAll('[data-kit]').forEach(b=>b.classList.toggle('equipped',b===kit));
     }
     current=key;stage.dataset.open=key;stage.removeAttribute('data-clean');stage.querySelector('.eye').setAttribute('aria-pressed','false');
     dialog.querySelector('h2').textContent=kit?kit.getAttribute('aria-label'):panels[key];
     body.replaceChildren();stage.dispatchEvent(new Event('recordchange'));body.removeAttribute('aria-busy');body.scrollTop=0;
     present(key);
+    dialog.querySelector('h2').focus({preventScroll:true});
+    animatePanel(true);
     if(kit)selectShot('turn');
     else if(panelShots[key])selectShot(panelShots[key]);
     else stage.dispatchEvent(new Event('posechange'));
@@ -262,7 +338,8 @@
             photo.loading='eager';preview.append(photo,el('h3',heading.textContent),el('p',intro.textContent));
             body.append(preview);
           }else showRecord(card || section);
-          body.append(action(tr('View full work record →','查看完整作品檔案 →'),()=>navigate('missions',kit.dataset.case),'tool-index'));
+          const fullRecord=link(tr('View full work record →','查看完整作品檔案 →'),files.missions+'#'+kit.dataset.case);
+          body.append(fullRecord);
           body.append(action(tr('Explore skill tree','探索技能樹'),()=>navigate('skills'),'discipline-skills'));
           body.append(el('article',null,'practice-note'));
           inspector.hidden=false;inspect(nextView || 'work');
@@ -275,31 +352,53 @@
             document.dispatchEvent(new Event('catalogueopen'));
           } else {
             tree(source);
-            body.append(action(tr('Search all tools','搜尋全部工具'),()=>navigate('skills','catalogue'),'tool-index'));
+            body.append(action(tr('Search the tool catalogue','搜尋工具目錄'),()=>navigate('skills','catalogue'),'tool-index'));
           }
           return;
         }
         if(key==='missions'){
-          const section=record && records(source).find(s=>s.querySelector('h2').id===record||s.id===record);
-          if(section){body.append(action(tr('‹ All work','‹ 全部作品'),()=>navigate('missions'),'record-back'));showRecord(section);}
+          const section=record && (records(source).find(s=>s.querySelector('h2').id===record||s.id===record) || [...source.querySelectorAll('[data-project]')].find(project=>project.id===record));
+          if(section){
+            body.append(action(tr('‹ Selected work','‹ 精選作品'),()=>navigate('missions'),'record-back'));
+            if(section.dataset.project)dialog.querySelector('h2').textContent=section.dataset.project;
+            showRecord(section);
+            if(section.dataset.project)body.append(link(tr('All screen credits','全部影像作品'),files.missions+'#credits-title'));
+            body.append(action(tr('Contact & downloads','聯絡及下載'),()=>navigate('contact'),'tool-index'));
+          }
           else showWorkList(source);
-        } else if(key==='archive'){
-          source.querySelectorAll('a[href*=".pdf"]').forEach(a=>actions.append(link(a.textContent.trim(),a.getAttribute('href'))));
-          actions.append(action(tr('Contact and profile links','聯絡及個人連結'),()=>navigate('contact')));body.append(actions);
+        } else if(key==='archive' || key==='contact'){
+          dialog.querySelector('h2').textContent=panels.contact;
+          const emails=source.querySelectorAll('a[href^="mailto:"]');
+          const emailList=el('div',null,'record-list');
+          for(const a of emails){
+            const contact=link(a.textContent.trim(),a.getAttribute('href'));
+            const label=a.href.includes('imaginedivision.com')?'Imagine Division':tr('Portfolio enquiries','作品及合作查詢');
+            contact.prepend(el('small',label));emailList.append(contact);
+          }
+          body.append(el('h3',tr('Get in touch','聯絡方法'),'list-title'),emailList);
+          for(const a of source.querySelectorAll('a[href*=".pdf"], a[href^="https://github.com/"]')){
+            actions.append(link(a.textContent.trim(),a.getAttribute('href')));
+          }
+          actions.append(link(tr('Shareable links page','個人連結頁'),'links/'));
+          body.append(el('h3',tr('Documents & profile','文件及個人連結'),'list-title'),actions);
+          for(const section of records(source).slice(1))showRecord(section);
         } else if(key==='news'){
           const sections=records(source);
           for(const section of sections)showRecord(section);
           if(!sections.length)body.append(el('p',tr('The Main street lobby is open.','街景大廳已開放。')));
         } else {
           for(const section of records(source))showRecord(section);
-          if(key==='story')body.append(action(tr('Explore my practice','了解創作實務'),()=>navigate('news')));
+          if(key==='story'){
+            actions.append(action(tr('Creative practice','創作實務'),()=>navigate('news')),
+              link(tr('Snowbreak 1.8 lobby study','Snowbreak 1.8 大廳習作'),new URL('../snowbreak/',asset).href),
+              action(tr('Contact & downloads','聯絡及下載'),()=>navigate('contact')));
+            body.append(actions);
+          }
         }
       } else {
         pause.hidden=false;body.append(pause);
         const locale=zh?'../':'zh-hk/';
-        body.append(link(tr('Snowbreak 1.8 lobby','Snowbreak 1.8 大廳'),new URL('../snowbreak/',asset).href));
         body.append(link(zh?'English':'繁體中文',locale+(files[entry]||'index.html')+'#settings'));
-        body.append(el('p',tr('Operative model and menu animation from Snowbreak: Containment Zone.','角色模型及選單動畫來自《塵白禁域》。')));
       }
     }catch(error){
       if(id!==revision)return;

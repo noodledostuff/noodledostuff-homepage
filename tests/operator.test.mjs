@@ -1,7 +1,25 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {cameraShot,levelUpShot} from '../assets/js/shots.js';
+import {cameraShot,levelUpShot,lobbyAngle} from '../assets/js/shots.js';
+
+test('street orbit drifts through every mark and accelerates between them',()=>{
+  assert.deepEqual(lobbyAngle(72),lobbyAngle(0));
+  const speed=t=>Math.hypot(...lobbyAngle(t+.01).map((v,i)=>v-lobbyAngle(t)[i]));
+  assert.ok(speed(6)>4*speed(0));
+  for(let t=0;t<72;t+=.05)assert.ok(speed(t)>1e-6);
+  const left=lobbyAngle(71.999),right=lobbyAngle(.001),seam=lobbyAngle(0);
+  assert.ok(seam.every((v,i)=>Math.abs(left[i]+right[i]-2*v)<1e-6));
+  const overhead=lobbyAngle(24);
+  assert.ok(overhead[2]>Math.PI/2);
+  assert.equal(overhead[3],Math.PI/4);
+  for(let frame=1;frame<=72*30;frame++){
+    const previous=lobbyAngle((frame-1)/30),next=lobbyAngle(frame/30);
+    // Position in metres, orbit in radians, lens in degrees per 30 fps frame.
+    const limits=[.01,.025,.03,.015,.18];
+    assert.ok(next.every((v,i)=>Math.abs(v-previous[i])<limits[i]));
+  }
+});
 
 test('opening camera loop moves from wide to detail and back over two minutes',()=>{
   const wide=cameraShot('turn',0);
@@ -30,25 +48,35 @@ test('each discipline frames its own work, technique and equipment views',()=>{
   assert.equal(closeUps.size,5);
 });
 
-test('the operative ships matched body and facial rigs for both native menu clips',()=>{
-  const bytes=readFileSync(new URL('../assets/models/operative-004.glb',import.meta.url));
+test('the portrait ships head-bound glasses, facial shapes, and three planted conversation mocap clips',()=>{
+  const bytes=readFileSync(new URL('../assets/models/portrait-operator.glb',import.meta.url));
   assert.equal(bytes.toString('ascii',0,4),'glTF');
   assert.equal(bytes.readUInt32LE(8),bytes.length);
   const doc=JSON.parse(bytes.toString('utf8',20,20+bytes.readUInt32LE(12)));
-  assert.deepEqual(doc.meshes.map(mesh=>mesh.name),['girl004_body01_skm','girl004_face01_skm']);
-  assert.equal(doc.skins.length,2);
+  const jointNames=doc.skins[0].joints.map(i=>doc.nodes[i].name);
+  assert.equal(jointNames.length,52);
   assert.ok(doc.images.every(image=>Number.isInteger(image.bufferView)));
-  const socket=doc.nodes.find(node=>node.name==='socket_face');
-  assert.ok(socket.children.length);
-  for(const [name,duration] of [['girl004_ui_enter01',254/30],['girl004_ui_stand01',3],['girl004_ui_stand01_face',2]]){
-    const clip=doc.animations.find(animation=>animation.name===name);
-    const end=Math.max(...clip.samplers.map(sampler=>doc.accessors[sampler.input].max[0]));
+  const glasses=doc.nodes.filter(n=>n.name?.startsWith('Glasses |'));
+  assert.equal(glasses.length,3);
+  for(const node of glasses)assert.equal(node.skin,0);
+  const lens=doc.materials.find(m=>m.name==='Eyewear | clear coated optical glass');
+  assert.equal(lens.extensions.KHR_materials_transmission.transmissionFactor,1);
+  const face=doc.meshes.find(m=>m.extras?.targetNames?.includes('eyeBlinkLeft'));
+  assert.equal(face.extras.targetNames.length,51);
+  for(const [name,duration] of [['Portrait arrival',6.4],['Portrait presentation',6.8],['Portrait listening',24.8],['Discipline cinema',5.6],['Discipline edit',6.4],['Discipline model',7.2],['Discipline mocap',6.8],['Discipline live',5.2]]){
+    const clip=doc.animations.find(a=>a.name===name);
+    const end=Math.max(...clip.samplers.map(s=>doc.accessors[s.input].max[0]));
     assert.ok(Math.abs(end-duration)<.001);
-    const joints=clip.channels.map(channel=>doc.nodes[channel.target.node].name);
-    if(!name.endsWith('_face')){
-      for(const joint of ['Bip001-Head','Bip001-R-Hand','Bip001-R-Finger1'])assert.ok(joints.includes(joint),joint);
-    }
-    if(name!=='girl004_ui_stand01')assert.ok(joints.some(joint=>joint.includes('LidMain')));
+    const joints=clip.channels.map(c=>doc.nodes[c.target.node].name);
+    for(const bone of ['Head','RightHand','RightHandIndex1','Hips'])assert.ok(joints.includes('mixamorig:'+bone));
+    assert.ok(clip.channels.some(c=>c.target.path==='weights'));
+  }
+  const disciplineClips=doc.animations.filter(a=>a.name.startsWith('Discipline '));
+  assert.equal(new Set(disciplineClips.map(a=>a.extras.motionSource)).size,5);
+  for(const [kit,hand] of Object.entries({cinema:'Right',edit:'Left',model:'Right',model_slate:'Left',mocap:'Right',live:'Right'})){
+    const socket=doc.nodes.findIndex(n=>n.name==='Grip_'+kit);
+    assert.ok(doc.nodes.find(n=>n.name==='mixamorig:'+hand+'Hand').children.includes(socket));
+    assert.equal(doc.nodes[doc.nodes[socket].children[0]].name,'Kit_'+kit);
   }
 });
 

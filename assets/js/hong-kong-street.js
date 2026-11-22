@@ -1,4 +1,4 @@
-import { streetWeather } from './street-weather.js';
+import { streetWeather } from './street-weather.js?v=street-studio-2';
 import * as T from '../vendor/three/three.module.min.js';
 import { Reflector } from '../vendor/three/Reflector.js';
 import { GLTFLoader } from '../vendor/three-vrm/runtime.js';
@@ -50,7 +50,7 @@ function lightWindows(material) {
   material.onBeforeCompile = shader => {
     shader.vertexShader = 'varying vec3 windowWorld;\n' + shader.vertexShader.replace(
       '#include <project_vertex>',
-      '#include <project_vertex>\nwindowWorld = (modelMatrix * vec4(transformed, 1.)).xyz;'
+      '#include <project_vertex>\nwindowWorld = (modelMatrix *\n#ifdef USE_INSTANCING\ninstanceMatrix *\n#endif\nvec4(transformed, 1.)).xyz;'
     );
     shader.fragmentShader = 'varying vec3 windowWorld;\n' + shader.fragmentShader.replace(
       '#include <emissivemap_fragment>', `
@@ -98,7 +98,7 @@ function weatherWall(material) {
     shader.uniforms.glazedTile = { value: tile ? 1 : 0 };
     shader.vertexShader = 'varying vec3 wallWorld;\n' + shader.vertexShader.replace(
       '#include <project_vertex>',
-      '#include <project_vertex>\nwallWorld = (modelMatrix * vec4(transformed, 1.)).xyz;'
+      '#include <project_vertex>\nwallWorld = (modelMatrix *\n#ifdef USE_INSTANCING\ninstanceMatrix *\n#endif\nvec4(transformed, 1.)).xyz;'
     );
     shader.fragmentShader = `varying vec3 wallWorld;
       uniform float glazedTile;
@@ -135,7 +135,7 @@ function wetAsphalt(material, uniforms) {
     Object.assign(shader.uniforms, uniforms);
     shader.vertexShader = 'varying vec3 roadWorld;\n' + shader.vertexShader.replace(
       '#include <project_vertex>',
-      '#include <project_vertex>\nroadWorld = (modelMatrix * vec4(transformed, 1.)).xyz;'
+      '#include <project_vertex>\nroadWorld = (modelMatrix *\n#ifdef USE_INSTANCING\ninstanceMatrix *\n#endif\nvec4(transformed, 1.)).xyz;'
     );
     shader.fragmentShader = `varying vec3 roadWorld;
       uniform sampler2D roadMirror;
@@ -164,8 +164,50 @@ function wetAsphalt(material, uniforms) {
   };
 }
 
+async function mountBillboard(street, boardName, project, width, height, y, z, back, front) {
+  const board = street.getObjectByName(boardName);
+  if (!board) return;
+  const url = new URL(`../models/hong-kong-street/textures/billboard-${project}.webp`, import.meta.url);
+  const map = await new T.TextureLoader().loadAsync(url.href);
+  map.colorSpace = T.SRGBColorSpace;
+  const material = new T.MeshStandardMaterial({
+    map, emissive: 0xfff4e8, emissiveMap: map, emissiveIntensity: 1.05, roughness: .58,
+  });
+  const panel = new T.PlaneGeometry(width, height);
+  // The two printed faces sit just inside the sign frame and read correctly in either direction.
+  for (const [x, direction] of [[back, -1], [front, 1]]) {
+    const face = new T.Mesh(panel, material);
+    face.position.set(x + direction * .004, y, z);
+    face.rotation.y = direction * Math.PI / 2;
+    board.add(face);
+  }
+}
+
+// Batch repeated, opaque street geometry in small blocks so whole blocks still cull.
+function instanceStreet(street) {
+  const batches=new Map(), position=new T.Vector3(), parts=[];
+  street.updateMatrixWorld(true);
+  street.traverse(mesh=>{
+    if(!mesh.isMesh || mesh.children.length || mesh.material.transparent || mesh.matrixWorld.determinant()<=0)return;
+    position.setFromMatrixPosition(mesh.matrixWorld);
+    const key=[mesh.geometry.id,mesh.material.id,Math.floor(position.x/22),Math.floor(position.z/22)].join('/');
+    if(!batches.has(key))batches.set(key,[]);
+    batches.get(key).push(mesh);
+  });
+  for(const meshes of batches.values()){
+    if(meshes.length<3)continue;
+    const first=meshes[0], batch=new T.InstancedMesh(first.geometry,first.material,meshes.length);
+    batch.castShadow=first.castShadow;batch.receiveShadow=first.receiveShadow;
+    meshes.forEach((mesh,i)=>{batch.setMatrixAt(i,mesh.matrixWorld);parts.push(mesh);});
+    batch.computeBoundingSphere();street.add(batch);
+  }
+  for(const part of parts)part.visible=false;
+  street.updateMatrixWorld(true);
+  street.traverse(node=>{node.matrixAutoUpdate=false;node.matrixWorldAutoUpdate=false;});
+}
+
 async function mountStreet(canvas, stage) {
-  const renderer = new T.WebGLRenderer({ canvas, antialias: true });
+  const renderer = new T.WebGLRenderer({ canvas, antialias: false });
   renderer.toneMapping = T.ACESFilmicToneMapping;
   renderer.outputColorSpace = T.SRGBColorSpace;
   renderer.shadowMap.enabled = true;
@@ -174,10 +216,14 @@ async function mountStreet(canvas, stage) {
 
   const world = new T.Scene();
   const camera = new T.PerspectiveCamera(60, 1, .08, 550);
+  // The GLB reuses the source pack's filenames for the repainted shop atlases.
+  const manager = new T.LoadingManager();
+  manager.setURLModifier(url => /\/T_(Showcase_\d+|Diner|Sign_Facade|Advertising_Signboard)_(A|N_GL|ORM|E)\.webp$/.test(url)
+    ? url + '?v=portfolio-signs-2' : url);
   const [sky, { scene: street }, operator] = await Promise.all([
     nightSky(),
-    new GLTFLoader().loadAsync(new URL('../models/hong-kong-street/Maps/Demo.glb', import.meta.url).href),
-    stage ? import('./street-operator.js').then(m => m.streetOperator(stage)) : null,
+    new GLTFLoader(manager).loadAsync(new URL('../models/hong-kong-street/Maps/Demo.glb', import.meta.url).href),
+    stage ? import('./street-operator.js?v=street-studio-2').then(m => m.streetOperator(stage,world)) : null,
   ]);
   sky.position.set(193, 0, -30);
   world.add(sky);
@@ -242,6 +288,13 @@ async function mountStreet(canvas, stage) {
     if (mat.map) mat.map.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
   }
 
+  // Target individual props so duplicate signs elsewhere keep their original artwork.
+  const billboards = await Promise.allSettled([
+    mountBillboard(street, 'SM_Advertising_Signboard_06', 'parallel-phantasia', 2.23, 1.36, .685, 1.839, -.105, .092),
+    mountBillboard(street, 'SM_Advertising_Signboard_01', 'angela-pang-growth', 2.54, .684, .517, 1.95, -.155, .042),
+  ]);
+  for (const result of billboards) if (result.status === 'rejected') console.warn('Street billboard unavailable', result.reason);
+
   const pmrem = new T.PMREMGenerator(renderer);
   const captureTarget = new T.WebGLCubeRenderTarget(128, { type: targetType });
   const probe = new T.CubeCamera(.18, 550, captureTarget);
@@ -255,20 +308,21 @@ async function mountStreet(canvas, stage) {
   const motion = document.querySelector('#motion'), pause = stage?.querySelector('[data-pause]');
   const practicals = world.children.filter(light => light.isSpotLight || light.isPointLight);
   const weather = streetWeather(renderer, world, camera, sky, practicals, targetType, operator?.scene);
+  instanceStreet(street);
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   let playing = !reduced.matches, lost = false, seconds = 1.7, previousTime = 0, animation = 0;
-  let localMap, orbiting = false, lastCapture = 0, queued = 0;
+  let localMap, queued = 0, renderScale = 1, slowFrames=0, lastMirror=0;
   if (operator) world.onAfterRender = (r, scene, reflectedCamera) => {
     if (reflectedCamera !== mirror.camera) return;
     r.autoClear = false;
     r.render(operator.scene, reflectedCamera);
     r.autoClear = true;
   };
-  function capture() {
+  function capture(reflect=true) {
     uniforms.roadWet.value = 0;
     uniforms.roadMirror.value = null;
     if (!wet || wet.checked) {
-      mirror.onBeforeRender(renderer, world, camera);
+      if(reflect)mirror.onBeforeRender(renderer, world, camera);
       uniforms.roadProjection.value.multiplyMatrices(mirror.material.uniforms.textureMatrix.value, inversePlane);
       uniforms.roadMirror.value = mirrorTarget.texture;
       uniforms.roadWet.value = 1;
@@ -286,14 +340,14 @@ async function mountStreet(canvas, stage) {
     queued = 0;
     const w = canvas.clientWidth, h = canvas.clientHeight;
     if (lost || !w || !h) return;
-    const ratio = Math.min(devicePixelRatio, 1.5, Math.sqrt(2400000 / (w*h)));
+    const ratio = renderScale*Math.min(devicePixelRatio, 1.5, Math.sqrt(1450000 / (w*h)));
     if (renderer.getPixelRatio() !== ratio) renderer.setPixelRatio(ratio);
     if (canvas.width !== Math.floor(w*ratio) || canvas.height !== Math.floor(h*ratio)) renderer.setSize(w,h,false);
     camera.aspect = w/h;
-    const scale = Math.min(.7, 1024/Math.max(w,h));
+    const scale = Math.min(.5, 720/Math.max(w,h));
     mirrorTarget.setSize(Math.max(1,Math.round(w*scale)),Math.max(1,Math.round(h*scale)));
     operator?.pose(seconds,0,!playing);
-    orbiting = frameShot();
+    frameShot();
     uniforms.roadWet.value = 0;
     uniforms.roadMirror.value = null;
     // All lobby shots share the same crossing and its lighting probe.
@@ -307,22 +361,28 @@ async function mountStreet(canvas, stage) {
       if (operator) operator.scene.environment = localMap.texture;
     }
     capture();
-    weather.draw(seconds,operator?.crop);
+    weather.draw(seconds);
   }
   function queueView() {
     if (!queued) queued = requestAnimationFrame(drawView);
   }
   function animate(now) {
-    if (now-previousTime >= 1000/30) {
-      const dt = Math.min((now-previousTime)/1000,.12);
-      previousTime = now; seconds += dt;
-      const kitRevealed = operator?.pose(seconds,dt,false);
-      if (orbiting && now-lastCapture >= 1000/15) {
-        orbiting = frameShot();
-        capture();
-        lastCapture = now;
-      } else if (kitRevealed) capture();
-      weather.draw(seconds,operator?.crop);
+    const elapsed = (now-previousTime)/1000;
+    previousTime=now;
+    // Bound the step after a shader compile or stalled frame.
+    const dt=Math.min(elapsed,.065);
+    seconds+=dt;
+    const revealed=operator?.pose(seconds,dt,false);
+    const moved=operator && frameShot();
+    if(moved || revealed){
+      const reflect=revealed || now-lastMirror>=95;
+      capture(reflect);
+      if(reflect)lastMirror=now;
+    }
+    weather.draw(seconds);
+    slowFrames=elapsed>.038 ? slowFrames+1 : Math.max(0,slowFrames-1);
+    if(slowFrames>=20 && renderScale>.5){
+      renderScale=Math.max(.5,renderScale-.15);slowFrames=0;queueView();
     }
     animation = requestAnimationFrame(animate);
   }
@@ -330,6 +390,7 @@ async function mountStreet(canvas, stage) {
     cancelAnimationFrame(animation);
     if (motion) motion.checked = playing;
     if (pause) {
+      stage.toggleAttribute('data-motion-paused',!playing);
       const zh = document.documentElement.lang.startsWith('zh');
       pause.disabled = lost;
       pause.setAttribute('aria-pressed',String(!playing));
@@ -349,7 +410,7 @@ async function mountStreet(canvas, stage) {
   document.addEventListener('visibilitychange', updatePlayback);
   for (const event of ['recordchange','posechange','skilllevelup']) stage?.addEventListener(event,queueView);
   view?.addEventListener('change',queueView);
-  wet?.addEventListener('change',() => { if (!lost) { capture(); weather.draw(seconds,operator?.crop); } });
+  wet?.addEventListener('change',() => { if (!lost) { capture(); weather.draw(seconds); } });
   window.addEventListener('resize',queueView);
   canvas.addEventListener('webglcontextlost',event => {
     event.preventDefault(); lost = true; stage?.classList.remove('scene-ready'); updatePlayback();

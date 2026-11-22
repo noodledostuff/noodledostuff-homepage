@@ -102,7 +102,7 @@ function rainMesh(uniforms) {
 export function streetWeather(renderer, world, camera, sky, practicals, type, foreground) {
   const target = (depthBuffer = false) => new T.WebGLRenderTarget(1, 1, { type, depthBuffer });
   const frame = target(true), atmosphere = target(), bright = target(), blur = target(), rain = target(!!foreground);
-  if (renderer.capabilities.isWebGL2) frame.samples = Math.min(4, renderer.capabilities.maxSamples);
+  if (foreground && renderer.capabilities.isWebGL2) rain.samples = Math.min(2, renderer.capabilities.maxSamples);
   const hasDepth = renderer.capabilities.isWebGL2 || renderer.extensions.has('WEBGL_depth_texture');
   if (hasDepth) frame.depthTexture = new T.DepthTexture(1, 1, T.UnsignedIntType);
   const packedTarget = () => new T.WebGLRenderTarget(1, 1, {
@@ -146,6 +146,7 @@ export function streetWeather(renderer, world, camera, sky, practicals, type, fo
     ...uniforms, image: { value: frame.texture }, source: { value: sources },
     projectionInverse: { value: camera.projectionMatrixInverse }, eyeMatrix: { value: camera.matrixWorld },
     clipRange: { value: new T.Vector2(camera.near,camera.far) },
+    focusDistance: { value: 0 },
   }, `
     ${readDepth}
     ${lights}
@@ -153,7 +154,23 @@ export function streetWeather(renderer, world, camera, sky, practicals, type, fo
     uniform mat4 projectionInverse, eyeMatrix;
     uniform vec4 source[3];
     uniform vec2 size, clipRange;
+    uniform float focusDistance;
     float distanceAt(float z) { return clipRange.x * clipRange.y / (clipRange.y-z*(clipRange.y-clipRange.x)); }
+    vec3 streetColor(float distance) {
+      vec3 color = texture2D(image,st).rgb;
+      if (focusDistance <= 0.) return color;
+      float radius = clamp(1.-focusDistance/distance,0.,1.) * min(3.,size.y*.0032);
+      if (radius < .35) return color;
+      float total = 1.;
+      for (int i=0; i<6; ++i) {
+        float a = 1.0472*float(i);
+        vec2 uv = st + radius*vec2(cos(a),sin(a))/size;
+        float weight = smoothstep(.55,.92,distanceAt(depthAt(uv))/distance);
+        color += weight*texture2D(image,uv).rgb;
+        total += weight;
+      }
+      return color/total;
+    }
     void main() {
       float depth = depthAt(st);
       vec4 end = projectionInverse * vec4(st*2.-1., depth*2.-1., 1.);
@@ -172,7 +189,7 @@ export function streetWeather(renderer, world, camera, sky, practicals, type, fo
         transmission *= pass;
         previous = next;
       }
-      vec3 c = texture2D(image,st).rgb * transmission + scatter;
+      vec3 c = streetColor(distanceAt(depth)) * transmission + scatter;
       vec2 aspect = vec2(size.x/size.y,1.);
       for (int i=0; i<3; ++i) {
         vec4 s = source[i];
@@ -228,11 +245,9 @@ export function streetWeather(renderer, world, camera, sky, practicals, type, fo
     }`);
   const finish = screenPass({
     image: { value: atmosphere.texture }, glow: { value: blur.texture }, drops: { value: rain.texture },
-    crop: { value: new T.Vector3(0,0,1) },
   }, `uniform sampler2D image, glow, drops;
-    uniform vec3 crop;
     void main() {
-      vec2 uv = (st-.5)/crop.z + .5 + crop.xy;
+      vec2 uv = st;
       vec4 dynamicLayer = texture2D(drops,uv);
       vec3 background = texture2D(image,uv).rgb + .17*texture2D(glow,uv).rgb;
       vec3 c = background * ${foreground ? '(1.-dynamicLayer.a)' : '1.'} + dynamicLayer.rgb;
@@ -263,6 +278,7 @@ export function streetWeather(renderer, world, camera, sky, practicals, type, fo
   return {
     restore() { drawDepth(roof,above); },
     capture() {
+      fog.uniforms.focusDistance.value = foreground ? camera.focus : 0;
       const size = renderer.getDrawingBufferSize(uniforms.size.value);
       for (const t of [frame, atmosphere, rain, fallback]) t?.setSize(size.x,size.y);
       const bw = Math.max(1,Math.round(size.x/6)), bh = Math.max(1,Math.round(size.y/6));
@@ -296,8 +312,7 @@ export function streetWeather(renderer, world, camera, sky, practicals, type, fo
       bloom.uniforms.threshold.value = cutoff;
       renderer.setRenderTarget(null);
     },
-    draw(seconds, crop) {
-      if (crop) finish.uniforms.crop.value.copy(crop);
+    draw(seconds) {
       uniforms.seconds.value = seconds;
       renderer.setRenderTarget(rain);
       if (foreground) {

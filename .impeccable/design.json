@@ -1,16 +1,16 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-20T19:57:19.572880Z",
-  "title": "NoodleDoStuff rooftop portfolio",
+  "generatedAt": "2026-11-22T05:10:34.622792Z",
+  "title": "NoodleDoStuff Main street portfolio",
   "extensions": {
     "breakpoints": [
       {
         "name": "Portrait lobby and bottom sheet",
-        "value": "(max-aspect-ratio: 1/1)"
+        "value": "(orientation: portrait)"
       },
       {
         "name": "Short landscape",
-        "value": "(max-height: 560px) and (min-aspect-ratio: 1/1)"
+        "value": "(orientation: landscape) and (max-height: 510px)"
       }
     ],
     "motion": [
@@ -31,13 +31,13 @@
     }
   ],
   "narrative": {
-    "northStar": "Timothy Yu’s portfolio as a playable rooftop lobby.",
-    "overview": "Snowbreak mission and utility frames open work records and skills over one Mong Kok rooftop. Each level-up orbits the operative and settles back into the lobby.",
+    "northStar": "Timothy Yu’s portfolio on a rainy Mong Kok street.",
+    "overview": "Selected work opens screen credits and production case studies. Discipline shortcuts frame the operator and equipment in the same street scene.",
     "keyCharacteristics": [
-      "Five production disciplines with distinct camera angles and equipment",
-      "Discipline records open directly beside the equipped operator",
-      "Connected skill nodes beside the character",
-      "Reflective glass towers and wet concrete"
+      "Five production disciplines with distinct camera views and equipment",
+      "A side panel on desktop and a bottom sheet in portrait",
+      "A skill tree that branches from practice to disciplines, tool types and tools",
+      "Continuous camera motion, practical lighting and wet asphalt reflections"
     ]
   }
 }

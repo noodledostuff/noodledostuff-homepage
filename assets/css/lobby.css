@@ -27,14 +27,14 @@
   height: 100vh;
   height: 100dvh;
   overflow: hidden;
-  background: #171c27 url('../media/main-street/lobby.webp') center / cover no-repeat;
+  background: #171c27 url('../media/main-street/lobby.webp?v=street-studio-2') center / cover no-repeat;
 }
-.rooftop:not(.scene-ready)[data-open=missions] {background-image:url('../media/main-street/lean.webp');}
-.rooftop:not(.scene-ready):is([data-open=story],[data-open=contact]) {background-image:url('../media/main-street/gaze.webp');}
-.rooftop:not(.scene-ready)[data-open=archive] {background-image:url('../media/main-street/rear.webp');}
+.rooftop:not(.scene-ready)[data-open=missions] {background-image:url('../media/main-street/lean.webp?v=street-studio-2');}
+.rooftop:not(.scene-ready):is([data-open=story],[data-open=contact]) {background-image:url('../media/main-street/gaze.webp?v=street-studio-2');}
+.rooftop:not(.scene-ready)[data-open=archive] {background-image:url('../media/main-street/rear.webp?v=street-studio-2');}
 .rooftop:not(.scene-ready)[data-skill]:not([data-open]) {background-image:var(--kit-poster);}
 .rooftop:not(.scene-ready)[data-open=discipline][data-inspection] {background-image:var(--inspection-poster);}
-.rooftop:not(.scene-ready)[data-open=skills] {background-image:url('../media/main-street/skills.webp');}
+.rooftop:not(.scene-ready)[data-open=skills] {background-image:url('../media/main-street/skills.webp?v=street-studio-2');}
 .rooftop.scene-ready {background-image: none;}
 .city-canvas, .rooftop::before {position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none;}
 .city-canvas {opacity: 0; z-index: -3;}
@@ -48,68 +48,78 @@
 .rooftop svg {width: 21px; height: 21px; flex: none; display: block;}
 
 
-.hud-grid {
-  position:absolute; inset:0; display:grid; grid-template-columns:minmax(185px,24%) minmax(0,1fr) minmax(300px,35%);
-  grid-template-rows:auto minmax(0,1fr) auto auto;
-  grid-template-areas:"creator location stats" "rail . operations" "identity identity actions" "ticker ticker ticker";
-  gap:clamp(8px,2vh,20px) 1.4vw; padding:max(2.4vh,env(safe-area-inset-top)) max(2vw,env(safe-area-inset-right)) max(1.6vh,env(safe-area-inset-bottom)) max(2vw,env(safe-area-inset-left));
-  pointer-events:none; font-family:"Segoe UI","Microsoft JhengHei",sans-serif;
-}
-.hud-grid button {pointer-events:auto; line-height:1.18;}
-.hud-grid svg {width:20px;height:20px;}
-.frame {position:absolute;inset:1%;pointer-events:none;border:1px solid #7fbbd42b;}
-.commander {grid-area:creator; align-self:start;}
-.commander button {display:flex;align-items:center;gap:10px;text-align:left;padding:7px 12px 7px 7px;background:linear-gradient(100deg,#0c1828eb,#1721399c);border:1px solid #93c8e950;}
-.commander i {display:grid;place-items:center;width:39px;aspect-ratio:1;background:#252c46;border:1px solid #85d9ed;border-radius:50%;color:#c8f9ff;}
-.commander span,.featured,.work-index span {display:grid;gap:3px;}
-.commander small,.featured small,.work-index small,.identity small,.sector,.ticker {font:700 clamp(10px,.75vw,13px) var(--mono);letter-spacing:.055em;}
-.commander small,.identity small {color:#b5e5e7;} .commander strong {font-size:clamp(16px,1.45vw,23px);}
-.sector {grid-area:location;align-self:start;justify-self:center;display:flex;align-items:center;gap:5px;color:#e8f1f6;background:#10192bd9;padding:5px 9px;white-space:nowrap;}
-.sector svg {color:#ffad51;width:14px;height:14px;}
-.resources,.view-tools {display:flex;align-items:center;justify-content:end;gap:5px;}
-.resources {grid-area:stats;align-self:start;}.view-tools {grid-area:actions;align-self:end;}
-.resources button,.view-tools button {display:flex;align-items:center;justify-content:center;gap:5px;min-height:36px;border:1px solid #aacbde63;background:#10192be8;padding:5px 9px;color:#ecf5fc;font:650 clamp(11px,.88vw,15px) "Segoe UI",sans-serif;}
-.resources svg,.view-tools svg {width:16px;height:16px;}.resources button:first-child svg {color:#a5f2d1;}
 
-.rail {grid-area:rail;align-self:center;align-items:start;display:flex;flex-direction:column;gap:4px;min-width:0;}
-.rail button {position:relative;display:flex;align-items:center;gap:10px;width:min(100%,196px);min-height:clamp(39px,6.1vh,57px);padding:4px 12px 4px 7px;text-align:start;color:#f4f7fa;background:linear-gradient(99deg,#142031ed,#202d40af);border:1px solid #aabfd13d;font:700 clamp(16px,1.42vw,24px)/1.06 var(--display);}
-.rail i {display:grid;place-items:center;flex:none;width:31px;height:31px;color:#c9d9e8;}
-.rail small {color:#cad7e3;font:500 .75em/1.1 "Segoe UI",sans-serif;}
-.rail .equipped {background:#dce7ed;color:#142637;border-color:#ebf1f5;}
-.rail .equipped i,.rail .equipped small {color:#304e63;}
-.rail .equipped::after {content:"";position:absolute;right:5px;top:5px;width:6px;height:6px;background:#317c9f;clip-path:polygon(0 0,100% 0,100% 100%);}
-.operations {grid-area:operations;align-self:center;justify-self:end;display:grid;width:min(100%,460px);grid-template-columns:minmax(0,1fr);grid-template-areas:"work" "feature" "tiles";gap:5px;min-width:0;}
-.operations button {position:relative;isolation:isolate;text-align:start;}
-.operations button:focus-visible {outline:3px solid #b9efff;outline-offset:1px;z-index:2;}
-.rooftop .work-index {grid-area:work;display:flex;align-items:center;min-height:clamp(78px,13vh,128px);padding:12px 7%;color:#f7fafb;background:linear-gradient(107deg,#101b2cf2 8%,#162737de 63%,#3d5c72db);border:1px solid #bcd7e262;overflow:hidden;}
-.work-index strong {font:700 clamp(29px,3.4vw,58px)/1 var(--display);letter-spacing:-.025em;}
-.work-index > svg {position:absolute;z-index:-1;right:14%;width:clamp(55px,8vw,122px);height:auto;opacity:.12;color:#c7ecf7;transform:rotate(-12deg);}
-.work-index em {position:absolute;right:6%;bottom:17%;display:grid;place-items:center;color:#b1eeff;}
-.rooftop .featured {grid-area:feature;display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:10px 7%;border:1px solid #c4d7de52;color:#f2f7fa;background:linear-gradient(105deg,#1d2b3fe8,#293a4abf);}
-.featured strong {font:700 clamp(17px,1.8vw,29px)/1.1 var(--display);}
-.featured span {color:#c7d8e3;font:500 clamp(10px,.8vw,14px)/1.15 "Segoe UI",sans-serif;}
-.tiles {grid-area:tiles;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;}
-.rooftop .tiles button {display:flex;align-items:center;gap:9px;min-height:clamp(34px,5.1vh,54px);padding:5px 10%;border:1px solid #b7c9d13d;color:#eef4f8;background:#172437df;font:700 clamp(16px,1.45vw,24px)/1.1 var(--display);}
-.tiles svg {width:18px;height:18px;color:#c4dbe9;}
-.identity {grid-area:identity;align-self:end;justify-self:start;text-shadow:0 1px 8px #030910;}
-.identity small {padding:2px 6px;color:#f2edda;background:#19232dcc;}
-.identity h1 {font:700 clamp(37px,4.2vw,76px)/.98 var(--display);letter-spacing:-.015em;margin:6px 0;color:white;}
-.ticker {grid-area:ticker;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:2px 1%;background:#141c24da;}
-.ticker button {display:flex;align-items:center;gap:10px;color:#eff3f1;font-size:inherit;text-align:start;min-height:24px;}
-.ticker b {color:#201b15;background:#ffba60;padding:2px 5px;white-space:nowrap;}.ticker time {color:#d6e4e5;white-space:nowrap;}
-.rooftop[data-clean] .hud,.rooftop[data-open] .hud,.rooftop[data-open] .view-tools {visibility:hidden;opacity:0;}
-@media (orientation:landscape) {.rooftop[data-open=discipline] .rail {visibility:visible;opacity:1;}.rooftop[data-open=discipline] .game-panel {z-index:2;box-shadow:0 14px 30px #060c2045;}}
-@media (hover:hover) {.hud-grid button:hover {filter:brightness(1.12);}.rail button:hover,.tiles button:hover {border-color:#a5c6da;}}
-.game-panel {
-  position: fixed; inset: max(20px,env(safe-area-inset-top)) max(var(--edge),env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) auto;
-  width: min(52vw, 800px); height: fit-content; max-height: calc(100dvh - max(20px,env(safe-area-inset-top)) - max(20px,env(safe-area-inset-bottom)));
-  max-width: none; margin: auto 0; padding: 0; overflow: hidden; border: 1px solid #8b999c; border-radius: 0; color: var(--ink); background: #15202b;
+.hud-grid {
+  position:absolute;inset:0;display:grid;pointer-events:none;
+  padding:max(3vh,env(safe-area-inset-top)) max(var(--edge),env(safe-area-inset-right)) max(2vh,env(safe-area-inset-bottom)) max(var(--edge),env(safe-area-inset-left));
+  grid-template-columns:minmax(145px,22%) 1fr minmax(245px,30%);grid-template-rows:auto 1fr auto auto;
+  grid-template-areas:"creator . stats" "rail . operations" "identity identity actions" "ticker ticker ticker";gap:12px;
 }
-.game-panel[open] {display: flex; flex-direction: column;}
-.game-panel::backdrop {background: linear-gradient(90deg, rgb(7 12 27 / .16), rgb(7 12 27 / .45));}
-.panel-head {display: flex; align-items: center; justify-content: space-between; gap: 10px; flex: none; padding: 14px 17px 12px 22px; border-bottom: 1px solid var(--line);}
-.panel-head h2 {font-family:var(--display);margin: 0; font-size: clamp(22px, 2.1vw, 34px); letter-spacing: -.035em; line-height: 1.13;}
-.rooftop .close {background: #eff1ec;color:#20272b; width: 44px; height: 44px; font-size: 26px; line-height: 1; font-weight: 350;}
+.frame {position:absolute;inset:1%;border:1px solid #afcfda30;pointer-events:none;}
+.hud-grid button {pointer-events:auto;}
+.commander {grid-area:creator;justify-self:start;}
+.commander button,.resources button,.view-tools button,.rail button,.operations button,.rooftop .close {
+  display:flex;align-items:center;gap:10px;text-align:start;color:var(--ink);
+  background:#152332e6;border:1px solid var(--line);border-radius:0;
+}
+.commander button {padding:5px 12px 5px 5px;}
+.commander i,.rail i {display:grid;place-items:center;flex:none;width:34px;aspect-ratio:1;color:var(--aqua);}
+.commander i {background:#c4dedf;color:#19323b;}
+.commander span,.work-index span {display:grid;}
+.commander small,.rail-title,.work-index small,.identity small,.ticker,.tree-root span,.panel-body .list-title,.project-feature small {
+  font:600 11px/1.35 var(--mono);letter-spacing:.08em;text-transform:uppercase;
+}
+.commander small,.work-index small {color:var(--aqua);}
+.commander strong {font:700 21px/1.1 var(--display);}
+.resources {grid-area:stats;justify-self:end;}
+.view-tools {grid-area:actions;justify-self:end;align-self:end;}
+.resources button,.view-tools button,.rooftop .close {width:44px;height:44px;justify-content:center;}
+.rail {grid-area:rail;align-self:center;display:grid;gap:4px;max-width:205px;}
+.rail-title,.identity small {justify-self:start;padding:2px 6px;background:#101c29e6;color:#d4e4e7;}
+.rail button {min-height:46px;padding:4px 9px 4px 4px;font:700 clamp(16px,1.4vw,23px)/1.04 var(--display);}
+.compact-label {display:none;}
+.rail i {border-inline-end:1px solid var(--line);}
+.rail small:not(.rail-title) {font-size:.75em;font-weight:500;color:inherit;}
+.rail button.equipped {background:#cbe1e4;color:#152734;}
+.rail button.equipped i {color:#214a59;}
+.operations {grid-area:operations;align-self:center;justify-self:end;display:grid;width:min(100%,400px);gap:6px;}
+.operations button {padding:11px 16px;font:700 clamp(19px,2vw,30px)/1.05 var(--display);}
+.operations button>svg:first-child {color:var(--aqua);}
+.operations button>svg:last-child {margin-inline-start:auto;width:16px;}
+.operations .work-index {
+  min-height:clamp(115px,19vh,215px);align-items:end;justify-content:space-between;padding:18px;
+  background:linear-gradient(0deg,#0a1828ed,transparent 95%),url('../media/portfolio/cover-led-stage-480.jpg') center/cover;
+  border-top:2px solid var(--aqua);
+}
+.work-index strong {font:700 clamp(30px,3.6vw,56px)/1.03 var(--display);}
+.work-index em {color:var(--aqua);}
+.identity {grid-area:identity;align-self:end;text-shadow:0 2px 12px #050d17;}
+.identity h1 {font:700 clamp(40px,5.8vw,85px)/.97 var(--display);letter-spacing:-.025em;margin:5px 0;color:var(--ink);}
+.ticker {grid-area:ticker;display:flex;justify-content:space-between;border-top:1px solid var(--line);padding-top:6px;color:#e2eaf0;text-shadow:0 1px 4px #05111d;}
+.rooftop[data-clean] .hud,.rooftop[data-open] .hud,.rooftop[data-open] .view-tools {visibility:hidden;opacity:0;}
+@media (orientation:landscape) {
+  .rooftop[data-open]:not([data-tree]) .commander,.rooftop:is([data-open=discipline],[data-open=missions]) .rail {visibility:visible;opacity:1;}
+}
+@media (hover:hover) {
+  .rooftop :is(.hud-grid,.game-panel) :is(button,a):hover:not(:disabled) {border-color:var(--aqua);filter:brightness(1.12);}
+}
+.game-panel {
+  position:fixed;inset:max(5vh,env(safe-area-inset-top)) var(--edge) auto auto;width:clamp(300px,40vw,720px);
+  height:fit-content;max-height:90dvh;max-width:none;margin:0;padding:0;overflow:hidden;
+  border:1px solid var(--line);border-top:2px solid var(--aqua);border-radius:0;background:#12202ff0;color:var(--ink);
+}
+.game-panel[open] {display:flex;flex-direction:column;}
+.game-panel::backdrop {background:#0814213b;}
+.panel-head {display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px 8px 16px;border-bottom:1px solid var(--line);flex:none;}
+.panel-head h2 {margin:0;font:700 clamp(22px,2.4vw,34px)/1.05 var(--display);}
+.panel-head h2:focus {outline:none;}
+.rooftop .close {font:300 26px/1 sans-serif;flex:none;}
+.inspection {display:flex;border-bottom:1px solid var(--line);}
+.rooftop .inspection button {display:flex;align-items:center;justify-content:center;gap:6px;flex:1;min-height:44px;font:700 18px/1 var(--display);}
+.inspection svg {width:16px;}
+.inspection [aria-pressed=true],.panel-body .level-up {background:#bee3e2;color:#132e32;}
+.kit-picker {display:none;}
+.discipline-record>img {width:100%;max-height:23dvh;aspect-ratio:2.3;}
 .panel-body {min-height: 0; min-width: 0; padding: clamp(14px, 1.6vw, 26px); overflow: auto; overscroll-behavior: contain; container-type: inline-size; scrollbar-width: thin; scrollbar-color: #8c9eaf transparent; line-height: 1.5; font-size: 15px; overflow-wrap: anywhere;}
 .panel-body[aria-busy=true] {min-height: 92px;}
 .panel-body h3 {color: var(--ink); margin: .8em 0 .3em;}
@@ -122,7 +132,7 @@
 .panel-body option {background: #283149;}
 .panel-body :is(.record-list,.contact-grid,.grid,.timeline,.case-facts,.stat-grid) {display: grid; grid-template-columns: minmax(0,1fr); gap: 10px;}
 .record-list button,.record-link {display: flex; width: 100%; align-items: center; text-align: start;}
-.project-list button {gap: 12px; line-height: 1.35;}
+.project-list .record-link {gap: 12px; line-height: 1.35;}
 .panel-body .project-list img {flex: none; width: clamp(54px, 16cqi, 92px); height: auto; aspect-ratio: 1.5; border-radius: 0; object-fit: cover;}
 .record-link {margin-block: 6px;}
 .panel-body .record-back {margin-bottom: 12px;}
@@ -146,149 +156,6 @@
 }
 .offline {position: fixed; inset: 0; display: grid; place-content: center; gap: 12px; background: #10192b; color: white;}
 
-
-
-
-@media (max-aspect-ratio:1/1) {
-  .rooftop {--stacked:1;background-position:32% center;}
-  .rooftop:not(.scene-ready)[data-open=skills] {background-image:url('../media/main-street/skills-portrait.webp');background-position:center;}
-  .rooftop:not(.scene-ready):not([data-skill]):not([data-open]) {background-image:url('../media/main-street/lobby-portrait.webp');background-position:center;}
-  .hud-grid {grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto minmax(0,1fr) auto auto auto;grid-template-areas:"creator stats" "rail rail" "operations operations" "identity actions" "ticker ticker";gap:6px 4px;padding:max(8px,env(safe-area-inset-top)) max(9px,env(safe-area-inset-right)) max(6px,env(safe-area-inset-bottom)) max(9px,env(safe-area-inset-left));}
-  .sector {display:none;}.commander button {padding:4px 7px;gap:5px;}.commander i {width:28px;}.commander strong {font-size:14px;}
-  .rail {align-self:start;margin-top:4px;gap:3px;}.rail button {width:120px;min-height:34px;padding:4px;gap:5px;font-size:15px;}.rail i {width:21px;height:24px;}.rail svg {width:15px;height:15px;}
-  .operations {width:min(100%,540px);justify-self:end;transform:none;gap:4px;}.rooftop .work-index {min-height:63px;padding:6px 10px;}.work-index strong {font-size:27px;}.work-index b {font-size:9px;}.featured small {font-size:8px;}.rooftop .featured {padding:5px 8px;}
-  .tiles {grid-template-columns:repeat(4,minmax(0,1fr));gap:3px;}.rooftop .tiles button {min-height:39px;font-size:16px;padding:1px;}.tiles svg {width:28px;padding:4px;}
-  .identity h1 {font-size:32px;margin:2px 0;}.identity small {font-size:9px;}
-  .game-panel {inset:auto max(6px,env(safe-area-inset-right)) max(6px,env(safe-area-inset-bottom)) max(6px,env(safe-area-inset-left));margin:0;width:auto;max-height:72dvh;}
-}
-@media (max-height:560px) and (min-aspect-ratio:1/1) {
-  .hud-grid {grid-template-columns:minmax(134px,24%) minmax(0,1fr) minmax(192px,36%);gap:4px 5px;padding:6px 10px;}
-  .commander i,.sector,.featured span {display:none;}.commander button {padding:4px 8px;}.commander strong {font-size:14px;}.resources button,.view-tools button {min-height:28px;}
-  .rail {gap:2px;}.rail button {min-height:27px;font-size:14px;gap:5px;padding:3px 6px;width:140px;}.rail i {width:23px;height:23px;}.rail svg {width:15px;height:15px;}
-  .rooftop .work-index {min-height:63px;padding:5px 7px;}.work-index strong {font-size:24px;}.work-index em {display:none;}.rooftop .featured {padding:4px;}.featured small {font-size:8px;}.featured strong {font-size:14px;}
-  .rooftop .tiles button {min-height:31px;font-size:16px;padding:1px;}.tiles svg {width:27px;padding:4px;}
-  .identity h1 {font-size:26px;margin:1px 0;}.identity small {font-size:9px;}
-  .ticker button {min-height:19px;}.game-panel {inset:6px 6px 6px auto;width:min(58vw,690px);max-height:calc(100dvh - 12px);}
-}
-@media (max-height:460px) and (max-aspect-ratio:1/1), (max-height:295px) {
-  .hud-grid {overflow-y:auto;pointer-events:auto;grid-template-rows:auto minmax(164px,1fr) auto auto auto;}
-}
-@media (forced-colors:active) {.rooftop button {border:1px solid ButtonText;}.rooftop button[aria-pressed=true] {outline:2px solid Highlight;}}
-.discipline-record>img {display:block;width:100%;height:clamp(125px,25vh,260px);object-fit:cover;}
-.panel-body .discipline-record h3 {font:700 clamp(24px,5cqi,36px)/1.05 var(--display);margin:15px 0 6px;}
-.panel-body .discipline-record p {margin:0 0 14px;max-width:62ch;}
-.rooftop[data-open=discipline] .tool-index {border:0;background:#edf0eb;color:#1b2630;padding:7px 16px;font:700 18px/1 var(--display);}
-@media (orientation:landscape) {.rooftop[data-open=discipline] .game-panel {width:min(45vw,690px);}}
-@media (orientation:portrait) {.rooftop[data-open=discipline] .game-panel {max-height:62dvh;}.discipline-record>img {height:clamp(96px,16vh,160px);}}
-.commander button,.resources button,.view-tools button {background:#162336de;border:1px solid #9eafbd70;border-radius:0;color:#eef5fa;}
-.commander i {border:0;border-radius:0;background:#cedde5;color:#273342;}
-.commander small,.resources button:first-child svg,.sector svg {color:#b2d5e6;}
-.sector {background:#192538c7;}
-.ticker b {background:#b8d7e4;color:#1a2835;}
-.game-panel {border:1px solid #9db0c757;background:rgb(15 26 40 / .78);}
-.panel-head {background:rgb(36 52 70 / .62);}
-.rooftop .close {border-radius:0;color:#eff7fc;background:#334556;}
-.rooftop[data-open=discipline] .tool-index {border-radius:0;background:#a9d2e4;color:#192936;}
-@media (forced-colors:active) {.rooftop .rail button::before,.tiles svg {border-color:ButtonText;}}
-
-@media (prefers-reduced-motion:reduce) {
-  .rooftop,.rooftop *,.rooftop *::before,.rooftop *::after {transition-property:none !important;}
-}
-
-.inspection {display:flex;flex:none;gap:1px;background:#b4c5cf;border-top:1px solid #b6c7d2;}
-.rooftop .inspection button {display:flex;align-items:center;justify-content:center;gap:6px;flex:1;min-width:0;min-height:39px;padding:4px;color:#344d60;background:#dce6ec;font:700 17px/1 var(--display);}
-.inspection svg {width:16px;height:16px;}
-.rooftop .inspection button[aria-pressed=true] {color:white;background:#334f63;}
-.rooftop .inspection button:focus-visible {outline-offset:-3px;outline-color:#5d9fc8;}
-@media (orientation:landscape) {
-  .rooftop[data-open=discipline] .game-panel {width:clamp(260px,32vw,520px);inset:clamp(42px,17vh,148px) max(var(--edge),env(safe-area-inset-right)) auto auto;margin:0;max-height:78dvh;}
-}
-@media (max-aspect-ratio:1/1) {
-  .operations {grid-template-columns:1.12fr 1fr;grid-template-areas:"work feature" "tiles tiles";}
-  .rooftop .featured {display:grid;align-content:center;gap:2px;}
-  .rooftop .tiles button {justify-content:center;gap:3px;font-size:14px;}
-  .tiles svg {width:15px;height:15px;padding:0;}
-}
-@media (max-height:560px) and (min-aspect-ratio:1/1) {
-  .tiles svg {width:16px;height:16px;padding:0;}
-  .rooftop .tiles button {gap:5px;padding:3px 7px;}
-  .rooftop[data-open=discipline] .game-panel {width:43vw;inset:6px 6px auto auto;max-height:calc(100dvh - 12px);}
-  .inspection svg {display:none;}
-}
-
-
-.kit-picker {display:none;}
-@media (orientation:portrait) {
-  [data-open=discipline] .panel-head h2 {position:absolute;clip-path:inset(50%);width:1px;height:1px;overflow:hidden;}
-  [data-open=discipline] .kit-picker {display:block;min-width:0;max-width:calc(100% - 55px);min-height:44px;padding:2px 4px;color:inherit;background:transparent;border:0;font:700 clamp(20px,5vw,28px)/1.2 var(--display);}
-  .kit-picker option {color:#152635;background:#e1e9ef;}
-}
-
-/* Snowbreak 1.8 Main, Role and Common atlas frames. */
-.rooftop {
-  --selected-mark:url('../media/snowbreak-ui/selected.webp');
-}
-.rooftop .work-index {border:0;background:linear-gradient(90deg,#0d1826ce,#10253655),url('../media/portfolio/cover-led-stage-480.jpg') center 53%/cover;padding-inline:8%;align-items:start;justify-content:center;flex-direction:column;}
-.work-index > svg,.work-index em svg {display:none;}
-.work-index em {width:clamp(25px,3.7vw,54px);height:auto;aspect-ratio:1;background:url('../media/snowbreak-ui/advance.webp') center/contain no-repeat;}
-.rooftop .featured {background:transparent url('../media/snowbreak-ui/secondary.webp') center/100% 100%;border:0;padding-left:23%;color:white;}
-.rooftop .tiles button {color:#243042;background:#d4dfe8c4;border:0;}
-.tiles svg {color:#263447;}
-.rooftop .resources [data-panel=settings] svg,.rooftop .eye svg,.tiles [data-panel=archive] svg,.tiles [data-panel=contact] svg {display:none;}
-.resources [data-panel=settings]::before,.tiles [data-panel=archive]::before,.tiles [data-panel=contact]::before {content:"";width:18px;height:18px;flex:none;background:center/contain no-repeat;}
-.resources [data-panel=settings]::before {background-image:url('../media/snowbreak-ui/settings.webp');}
-.tiles [data-panel=archive]::before {background-image:url('../media/snowbreak-ui/archive.webp');filter:brightness(.23);}
-.tiles [data-panel=contact]::before {background-image:url('../media/snowbreak-ui/contact.webp');filter:brightness(.23);}
-.rooftop .eye {width:40px;aspect-ratio:1.22;border:0;background:transparent url('../media/snowbreak-ui/visibility.webp') center/contain no-repeat;}
-.rooftop .rail button {background:linear-gradient(90deg,#2d3354e8,#263448ce);border:0;}
-.rooftop .rail i {align-self:stretch;background:linear-gradient(140deg,#615eacb5,#323c5855);}
-.rooftop .rail .equipped {background:#e0e8ef;}
-.rooftop .rail .equipped::after {width:13px;height:13px;clip-path:none;background:var(--selected-mark) center/contain;}
-.rooftop .close {font-size:0;background:#242b39 url('../media/snowbreak-ui/close.webp') center/15px no-repeat;}
-@media (orientation:landscape) and (min-height:560px) {
-  .operations {width:min(100%,375px);gap:5px;transform:perspective(1100px) rotateY(-7deg);transform-origin:right center;}
-}
-@media (orientation:portrait) {
-  [data-open=discipline] .inspection button {min-height:40px;}
-}
-
-/* Records share the lobby HUD and its camera. */
-.rooftop[data-open] .commander,.rooftop[data-open] .sector {visibility:visible;opacity:1;}
-@media (orientation:landscape) {
-  .rooftop[data-open] .resources,.rooftop[data-open] .rail {visibility:visible;opacity:1;}
-  .rooftop[data-open] .game-panel {inset:11vh max(2vw,env(safe-area-inset-right)) auto auto;margin:0;max-height:84dvh;}
-}
-.rooftop[data-open=discipline] .game-panel {color:var(--ink);}
-.inspection {background:#192a3b66;border-color:var(--line);}
-.rooftop .inspection button {background:#243449;color:#d9e3ea;}
-.rooftop .inspection button[aria-pressed=true] {background:#d0e0e9;color:#162632;}
-.rooftop[data-open=discipline] .tool-index {width:100%;color:#fff;background:#293342 url('../media/snowbreak-ui/command.webp') center/100% 100%;}
-.discipline-record>img {height:auto;max-height:20dvh;aspect-ratio:2.65;}
-.panel-body .practice-note h3 {margin:0;}
-.level-controls {display:flex;align-items:center;gap:12px;margin-bottom:8px;}
-.level-controls .skill-level {min-width:0;overflow-wrap:anywhere;font:600 14px var(--mono);color:#ace7dc;}
-.panel-body .level-up {margin-inline-start:auto;background:#bee5dc;color:#17352e;font-weight:700;}
-@media (max-height:460px) and (orientation:landscape) {
-  .rooftop[data-open] .game-panel {inset:5px 6px auto auto;max-height:calc(100dvh - 10px);}
-}
-
-/* Lobby command stack and operative records share the Hong Kong street canvas. */
-.operations {grid-template-areas:"feature" "work" "skills" "tiles";}
-.rooftop .skill-command {
-  grid-area:skills;display:flex;align-items:center;justify-content:space-between;min-height:clamp(44px,7vh,78px);
-  padding:5px 7%;color:#f5f8fc;background:linear-gradient(100deg,#151c2ce0,#232e42ad);
-  border-inline-start:3px solid #86a9b9;font:700 clamp(19px,2.2vw,34px)/1 var(--display);
-}
-.skill-command svg {width:1em;height:1em;color:#b3e3ec;}
-.tiles {grid-template-columns:repeat(3,minmax(0,1fr));}
-.rooftop .featured {padding:7px 6%;background:linear-gradient(95deg,#34495bcb,#162536a8);border-inline-start:3px solid #d5bf8a;}
-.rooftop .rail button {background:linear-gradient(95deg,#233047d9,#23304799);}
-.rooftop .rail button.equipped {background:#dbe6ebdd;}
-.rooftop[data-open] .frame,.rooftop[data-open] .sector,.rooftop[data-open] .resources {visibility:hidden;opacity:0;}
-.game-panel::backdrop {background:rgb(6 13 24 / .13);}
-.panel-body .discipline-skills {width:100%;margin-top:6px;background:#1d374bb8;}
-.rooftop .inspection button {background:#23364bb0;}
-.rooftop[data-tree] .hud,.rooftop[data-tree] .view-tools {visibility:hidden;opacity:0;}
 .rooftop[data-tree] .game-panel {
   --node-size:clamp(38px,5.4vw,66px);
   inset:max(12px,env(safe-area-inset-top)) max(2vw,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(2vw,env(safe-area-inset-left));
@@ -327,37 +194,72 @@
 .node-detail img {width:34px;object-fit:contain;}
 .panel-body .node-detail p {font-size:.95em;margin:.25em 0 .8em;}
 .panel-body .level-controls {padding-block:6px;margin:0;border-block:1px solid var(--line);}
-@media (orientation:landscape) {
-  .rooftop[data-open]:not([data-tree]) .game-panel {width:clamp(260px,38vw,720px);}
-  .rooftop[data-open=missions] .rail,.rooftop[data-open=discipline] .rail {visibility:visible;opacity:1;}
-  .rooftop:is([data-open=missions],[data-open=discipline]) .rail button {padding-inline-start:0;overflow:hidden;border:1px solid #bad6e455;}
-  .rooftop:is([data-open=missions],[data-open=discipline]) .rail i {width:clamp(32px,4vw,64px);height:auto;align-self:stretch;background:var(--record-image) center/cover;}
-  .rooftop:is([data-open=missions],[data-open=discipline]) .rail svg {display:none;}
-  .rail [data-kit=cinema] {--record-image:url('../media/portfolio/filmmaking-camera-operator-480.jpg');}
-  .rail [data-kit=edit] {--record-image:url('../media/portfolio/filmmaking-mv-stage-480.jpg');}
-  .rail [data-kit=model] {--record-image:url('../media/portfolio/virtual-production-led-stage-480.jpg');}
-  .rail [data-kit=mocap] {--record-image:url('../media/portfolio/motion-capture-vtuber-stage-480.jpg');}
-  .rail [data-kit=live] {--record-image:url('../media/portfolio/events-production-control-room-480.jpg');}
 
-}
-@media (max-aspect-ratio:1/1) {
-  .operations {grid-template-columns:1.2fr 1fr;grid-template-areas:"feature feature" "work skills" "tiles tiles";}
-  .rooftop .featured {display:flex;min-height:30px;align-items:center;}
-  .rooftop .skill-command {min-height:44px;font-size:20px;}
+.panel-body .tool-index,.panel-body .discipline-skills {width:100%;margin-top:8px;text-align:start;}
+.panel-body .record-list {gap:6px;}
+.panel-body .record-link {color:var(--ink);text-decoration:none;}
+.panel-body a[href^="mailto:"] {display:grid;gap:2px;}
+.panel-body a[href^="mailto:"] small {font:600 11px/1.4 var(--mono);color:var(--aqua);}
+.panel-body .record-list button,.panel-body .record-link {border-radius:0;margin:0;}
+.panel-body .list-title {color:var(--aqua);margin:1.4em 0 .65em;}
+.panel-body>.list-title:first-child {margin-top:0;}
+.screen-credits {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;}
+.panel-body .project-feature {display:grid;min-width:0;color:var(--ink);text-decoration:none;border:1px solid var(--line);overflow:hidden;}
+.project-feature img {grid-area:1/1;width:100%;aspect-ratio:1.95;height:100%;object-fit:cover;}
+.project-feature strong {grid-area:1/1;align-self:end;padding:16px 9px 6px;background:linear-gradient(0deg,#0a1729ed,transparent);font:700 clamp(16px,4cqi,24px)/1.06 var(--display);}
+.level-controls {display:flex;align-items:center;justify-content:space-between;}
+[data-tree] .panel-head {pointer-events:auto;}
+.tree-root,.type-node {position:absolute;transform:translate(-50%,-50%);pointer-events:auto;}
+.rooftop .tree-root {left:50%;top:54%;display:grid;justify-items:center;gap:4px;padding:9px;background:#19323cf5;border:1px solid #abd5d3;color:#e3ffff;}
+.skill-map.collapsed :is(.branch-node,.branch-lines) {display:none;}
+.skill-map.expanded + .inspection + .panel-body .tree-types {display:none;}
+.tree-root svg {color:var(--aqua);}
+.skill-map.expanded .branch-node,.skill-map.expanded path:not(.type-edge) {display:none;}
+.rooftop .type-node {width:max-content;max-width:31%;min-height:44px;padding:5px 8px;background:#172c3ef2;border:1px solid var(--line);font:700 18px/1.15 var(--display);}
+.rooftop .type-node[aria-pressed=true] {border-color:#a1e5df;color:var(--aqua);}
+.tree-leaves {position:relative;padding-inline-start:12px;border-inline-start:1px solid #85aeb3;}
+@keyframes grow-edge {from {stroke-dashoffset:1;} to {stroke-dashoffset:0;}}
+@keyframes grow-node {from {opacity:0;scale:.92;} to {opacity:1;scale:1;}}
+@media (prefers-reduced-motion:no-preference) {
+  .rooftop:not([data-motion-paused]) .branch-lines path {stroke-dasharray:1;animation:grow-edge .32s cubic-bezier(.2,.7,.25,1) var(--grow-delay,0ms) both;}
+  .rooftop:not([data-motion-paused]) :is(.branch-node i,.type-node,.tree-leaves button) {animation:grow-node .2s calc(var(--grow-delay,0ms) + 140ms) both;}
+  .rooftop:not([data-motion-paused]) .tree-root {animation:grow-node .16s ease-out;}
+  .hud,.view-tools {transition:opacity .18s ease,visibility .18s;}
 }
 @media (orientation:portrait) {
-  .rooftop[data-open]:not([data-tree]) .game-panel {max-height:54dvh;}
-  [data-open=missions] .kit-picker {display:block;min-width:0;max-width:40%;background:#203448cc;border:1px solid var(--line);min-height:40px;color:white;}
-  .rooftop[data-tree] .game-panel {--node-size:clamp(33px,5.5dvh,50px);inset:max(6px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) max(6px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));}
-  .skill-map {inset:8% 0 49%;}
+  .rooftop:not(.scene-ready):not([data-skill]):not([data-open]) {background-image:url('../media/main-street/lobby-portrait.webp?v=street-studio-2');}
+  .rooftop:not(.scene-ready)[data-open=skills] {background-image:url('../media/main-street/skills-portrait.webp?v=street-studio-2');}
+  .rooftop:not(.scene-ready)[data-open=discipline] {background-position:36% center;}
+  .hud-grid {grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto 1fr auto auto auto;grid-template-areas:"creator stats" "identity actions" "rail rail" "operations operations" "ticker ticker";gap:7px;}
+  .rail {width:100%;max-width:none;grid-template-columns:repeat(5,minmax(0,1fr));gap:3px;}
+  .rail-title {grid-column:1/-1;}
+  .rail button {flex-direction:column;justify-content:center;min-width:0;min-height:52px;padding:4px 2px;gap:3px;font-size:15px;}
+  .rail i {width:19px;border:0;}.rail i svg {width:18px;height:18px;}
+  .rail .full-label {display:none;}.rail .compact-label {display:block;}
+  .identity {padding-bottom:6px;}
+  .operations {width:100%;grid-template-columns:1fr 1fr;}
+  .operations .work-index {grid-column:1/-1;min-height:86px;padding:10px 12px;}
+  .operations button {font-size:18px;padding:8px;gap:6px;min-height:44px;}
+  .operations button>svg:last-child {display:none;}
+  .identity h1 {font-size:42px;}
+  .game-panel {inset:auto 8px max(8px,env(safe-area-inset-bottom)) 8px;width:auto;max-height:55dvh;}
+  [data-open=discipline] .panel-head h2 {position:absolute;clip-path:inset(50%);width:1px;height:1px;overflow:hidden;}
+  :is([data-open=missions],[data-open=discipline]) .kit-picker {display:block;max-width:59%;min-height:44px;background:#192b3a;color:var(--ink);border:1px solid var(--line);}
+  [data-open=discipline] .kit-picker {max-width:calc(100% - 52px);}
+  .rooftop[data-tree] .game-panel {--node-size:clamp(34px,5.6dvh,48px);inset:8px;}
+  .skill-map {inset:9% 0 50%;}
   [data-tree] .panel-body {top:53%;bottom:0;width:100%;max-height:none;}
-  .branch-node span {font-size:clamp(12px,3.6vw,18px);}
-  [data-tree] .panel-head {padding:0;min-height:42px;}
+  .branch-node span {font-size:clamp(12px,3.5vw,18px);}
 }
-@media (max-height:480px) and (orientation:landscape) {
-  .rooftop[data-tree] .game-panel {--node-size:32px;inset:5px 8px;}
-  .skill-map {inset:17% 42% 7% 0;}
-  [data-tree] .panel-body {top:17%;width:42%;max-height:83%;padding:9px;}
-  .branch-node span {font-size:12px;}
-  .rooftop .skill-command {min-height:31px;font-size:17px;}
+@media (max-height:510px) and (orientation:landscape) {
+  .hud-grid {padding:5px 12px;gap:3px;}
+  .rail {gap:2px;}.rail button {min-height:28px;padding:2px;font-size:15px;}.rail i {width:24px;}
+  .identity h1 {font-size:32px;}.operations .work-index {min-height:62px;}
+  .game-panel {top:5px;max-height:calc(100dvh - 10px);}
+  .rooftop[data-tree] .game-panel {--node-size:32px;inset:4px 8px;}
+  .skill-map {inset:18% 40% 9% 0;} [data-tree] .panel-body {top:18%;width:39%;max-height:82%;}
 }
+@media (max-width:400px) and (max-height:660px) and (orientation:portrait) {
+  .hud-grid {overflow-y:auto;grid-template-rows:auto minmax(115px,1fr) auto auto auto;pointer-events:auto;}
+}
+@media (forced-colors:active) {.rooftop button {border:1px solid ButtonText;}.rooftop button[aria-pressed=true] {outline:2px solid Highlight;}}
